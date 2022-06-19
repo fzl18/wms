@@ -40,13 +40,12 @@
                   </template>
                   {{ row.unit }}
                 </el-descriptions-item>
-                <el-descriptions-item>
+                <!-- <el-descriptions-item>
                   <template slot="label">
-                    <!-- <i class="el-icon-office-building"></i> -->
                     单价
                   </template>
                   {{ row.price }}
-                </el-descriptions-item>
+                </el-descriptions-item> -->
               </el-descriptions>
             </el-col>
           </el-row>
@@ -88,10 +87,17 @@
             </el-button>
           </el-tooltip>
           <el-tooltip v-if="active" content="删除" placement="top">
-            <el-button type="text" @click="handleDelete(row)">
+            <el-button
+              type="text"
+              :disabled="!!row.deliv_status"
+              @click="handleDelete(row)"
+            >
               <remix-icon
                 icon-class="delete-bin-6-line"
-                :style="{ fontSize: '18px', color: '#d4483d' }"
+                :style="{
+                  fontSize: '18px',
+                  color: !!row.deliv_status ? '#ddd' : '#d4483d',
+                }"
               ></remix-icon>
             </el-button>
           </el-tooltip>
@@ -121,12 +127,14 @@
       type="fahuo"
       @confirm="confirm"
     ></table-edit>
+    <print-temp ref="print" type="delivery"></print-temp>
   </div>
 </template>
 
 <script>
   import _ from 'lodash'
   import TableEdit from './edit.vue'
+  import PrintTemp from './printTemp.vue'
   import { busoutboundEdit, applyAll } from './api'
   import dayjs from 'dayjs'
 
@@ -134,6 +142,7 @@
     name: 'CustomTable',
     components: {
       TableEdit,
+      PrintTemp,
     },
     data() {
       return {
@@ -180,9 +189,9 @@
           //   prop: 'price',
           // },
           {
-            label: '金额',
+            label: '件数',
             width: 'auto',
-            prop: 'amount',
+            prop: 'nums',
           },
           {
             label: '时间',
@@ -240,7 +249,6 @@
             offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
             limit: this.queryForm.pageSize,
           }).then((res) => {
-            console.log(res)
             this.list = res.rows
             this.total = res.total
             this.listLoading = false
@@ -279,7 +287,9 @@
         this.getList()
       },
 
-      handlePrint(row) {},
+      handlePrint(row) {
+        this.$refs.print.show(row)
+      },
       handleTabs(active) {
         this.active = active
         this.queryForm.pageNo = 1

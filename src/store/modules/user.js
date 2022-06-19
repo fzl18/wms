@@ -12,6 +12,7 @@ import {
 } from '@/utils/accessToken'
 import router, { resetRouter } from '@/router'
 import { title, tokenName } from '@/config'
+import store from '@/store'
 
 const state = {
   accessToken: getAccessToken(),
@@ -85,6 +86,7 @@ const actions = {
     // const accessToken = data[tokenName]
     // console.log(data)
     if (data.id) {
+      console.log('到了')
       commit('setHasLogin', true)
       Cookies.set(`hasLogin`, true)
       commit('setUsername', data.name || '无名')
@@ -101,6 +103,8 @@ const actions = {
         })
       }
       commit('setRoles', roles)
+      let routeList = await store.dispatch('routes/setRoutes')
+      router.addRoutes(routeList)
 
       const hour = new Date().getHours()
       const thisTime =
@@ -136,7 +140,6 @@ const actions = {
     const accessToken = authData['userToken']
     if (accessToken) {
       commit('setAccessToken', accessToken)
-      console.log('拿到userToken了')
       const hour = new Date().getHours()
       const thisTime =
         hour < 8

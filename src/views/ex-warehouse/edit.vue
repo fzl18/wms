@@ -51,11 +51,7 @@
         <el-form-item label="单位(KG/T)" prop="unit">
           <el-input v-model="form.unit" :readonly="!isEdit"></el-input>
         </el-form-item>
-        <el-form-item
-          v-if="type != 'permit' && type != 'songhuo'"
-          label="单价"
-          prop="price"
-        >
+        <el-form-item v-if="type == 'amount'" label="单价" prop="price">
           <el-input v-model.number="form.price" :readonly="!isEdit"></el-input>
         </el-form-item>
         <el-form-item v-if="type == 'amount'" label="金额" prop="amount">

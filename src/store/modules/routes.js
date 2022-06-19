@@ -33,13 +33,13 @@ const actions = {
    */
   async setRoutes({ commit }, mode = 'server') {
     let routes = asyncRoutes
-    if (mode === 'server' && loginInterception) {
-      let data = await getRouterList()
-      data = formatRouter(data)
-      if (data[data.length - 1].path !== '*')
-        data.push({ path: '*', redirect: '/404', hidden: true })
-      routes = convertRouter(data)
-    }
+    // if (mode === 'server' && loginInterception) {
+    //   let data = await getRouterList()
+    //   data = formatRouter(data)
+    //   if (data[data.length - 1].path !== '*')
+    //     data.push({ path: '*', redirect: '/404', hidden: true })
+    //   routes = convertRouter(data)
+    // }
     const roles = store.getters['user/roles']
 
     //     "rway": 送货申请单 对应  applylist

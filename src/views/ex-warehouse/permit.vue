@@ -13,7 +13,7 @@
       stripe
       border
     >
-      <el-table-column type="expand">
+      <!-- <el-table-column type="expand">
         <template #default="{ row }">
           <el-row class="expandInfo goods">
             <el-col :span="18" :offset="3" class="title">货物信息</el-col>
@@ -21,28 +21,20 @@
               <el-descriptions class="" :column="4" size="medium" border>
                 <el-descriptions-item>
                   <template slot="label">
-                    <!-- <i class="el-icon-office-building"></i> -->
                     规格
                   </template>
                   {{ row.format }}
                 </el-descriptions-item>
                 <el-descriptions-item>
-                  <template slot="label">
-                    <!-- <i class="el-icon-office-building"></i> -->
-                    重量
-                  </template>
+                  <template slot="label">重量</template>
                   {{ row.weight }}
                 </el-descriptions-item>
                 <el-descriptions-item>
-                  <template slot="label">
-                    <!-- <i class="el-icon-office-building"></i> -->
-                    单位
-                  </template>
+                  <template slot="label">单位</template>
                   {{ row.unit }}
                 </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
-                    <!-- <i class="el-icon-office-building"></i> -->
                     单价
                   </template>
                   {{ row.price }}
@@ -51,7 +43,7 @@
             </el-col>
           </el-row>
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column
         v-for="(item, index) in columns"
         v-show="item.show"
@@ -121,12 +113,14 @@
       :tit="'出门证'"
       @confirm="confirm"
     ></table-edit>
+    <print-temp ref="print" type="permit"></print-temp>
   </div>
 </template>
 
 <script>
   import _ from 'lodash'
   import TableEdit from './edit.vue'
+  import PrintTemp from './printTemp.vue'
   import { busppEdit, applyAll } from './api'
   import dayjs from 'dayjs'
 
@@ -134,6 +128,7 @@
     name: 'CustomTable',
     components: {
       TableEdit,
+      PrintTemp,
     },
     data() {
       return {
@@ -148,11 +143,11 @@
             label: '批号',
             prop: 'batchnum',
           },
-          {
-            label: '收货单位（客户）',
-            prop: 'company',
-            minWidth: '160',
-          },
+          // {
+          //   label: '收货单位（客户）',
+          //   prop: 'company',
+          //   minWidth: '160',
+          // },
 
           {
             label: '货物名称',
@@ -164,25 +159,25 @@
           //   width: 'auto',
           //   prop: 'specifications',
           // },
-          // {
-          //   label: '重量',
-          //   width: 'auto',
-          //   prop: 'weight',
-          // },
-          // {
-          //   label: '单位(KG/T)',
-          //   width: '120',
-          //   prop: 'unit',
-          // },
+          {
+            label: '重量',
+            width: 'auto',
+            prop: 'weight',
+          },
+          {
+            label: '单位(KG/T)',
+            width: '120',
+            prop: 'unit',
+          },
           // {
           //   label: '单价',
           //   width: 'auto',
           //   prop: 'price',
           // },
           {
-            label: '金额',
+            label: '件数',
             width: 'auto',
-            prop: 'amount',
+            prop: 'nums',
           },
           {
             label: '时间',
@@ -288,7 +283,9 @@
         this.getList()
       },
 
-      handlePrint(row) {},
+      handlePrint(row) {
+        this.$refs.print.show(row)
+      },
       handleTabs(active) {
         this.active = active
         this.queryForm.pageNo = 1

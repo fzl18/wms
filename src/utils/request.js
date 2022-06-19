@@ -42,8 +42,8 @@ const handleData = ({ config, data }) => {
       //   window.location.href = `/`
       //   break
       case 3:
-        Cookies.set(`hasLogin`, false)
-        router.push({ path: '/403' }).catch(() => {})
+        // Cookies.set(`hasLogin`, false)
+        router.push({ path: '/login' }).catch(() => {})
         break
       default:
         Vue.prototype.$baseMessage(msg, 'error')

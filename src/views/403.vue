@@ -59,7 +59,7 @@
           if (this.jumpTime) {
             this.jumpTime--
           } else {
-            this.$router.push({ path: '/login' })
+            this.$router.push({ path: '/login', replace: true })
             this.delOthersVisitedRoutes({ path: '/' })
             clearInterval(this.timer)
           }

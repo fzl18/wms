@@ -115,29 +115,32 @@
         align="center"
         label="操作"
         show-overflow-tooltip
-        :min-width="130"
+        :min-width="150"
       >
         <template #default="{ row }">
-          <el-switch
-            v-if="!active"
-            v-model="row.status"
-            style="display: block"
-            active-color="#13ce66"
-            inactive-color="orange"
-            active-text="通过"
-            inactive-text="否"
-            @change="handleCheck(row)"
-          ></el-switch>
-          <el-switch
-            v-if="active"
-            v-model="row.rtn_status"
-            style="display: block"
-            active-color="#13ce66"
-            inactive-color="orange"
-            active-text="通过"
-            inactive-text="否"
-            @change="handleCheck(row)"
-          ></el-switch>
+          <div
+            style="display: flex; align-items: center; justify-content: center"
+          >
+            <el-switch
+              v-model="row.status"
+              style="display: block"
+              active-color="#13ce66"
+              inactive-color="orange"
+              active-text="通过"
+              inactive-text="否"
+              size="mini"
+              @change="handleCheck(row)"
+            ></el-switch>
+            <el-divider direction="vertical"></el-divider>
+            <el-tooltip v-if="!active" content="编辑" placement="top">
+              <el-button type="text" @click="handleEdit(row)">
+                <remix-icon
+                  icon-class="edit-2-fill"
+                  :style="{ fontSize: '18px', color: '#3399d4' }"
+                ></remix-icon>
+              </el-button>
+            </el-tooltip>
+          </div>
         </template>
       </el-table-column>
     </el-table>
@@ -162,7 +165,7 @@
 <script>
   import _ from 'lodash'
   import TableEdit from './edit.vue'
-  import { applyAll, checkEdit } from './api'
+  import { applyAll, checkEdit, applyEdit } from './api'
   import dayjs from 'dayjs'
 
   export default {
@@ -270,7 +273,7 @@
         applyAll({
           datatype: 1,
           filter: JSON.stringify(
-            this.active == 0 ? { out_status: 0 } : { pp_status: 1 }
+            this.active == 0 ? { out_status: 0 } : { rtn_status: 1 }
           ),
           offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
           limit: this.queryForm.pageSize,

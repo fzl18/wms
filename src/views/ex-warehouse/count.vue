@@ -66,7 +66,6 @@
       v-if="show"
       ref="tableSort"
       v-loading="listLoading"
-      show-summary
       :data="list"
       style="width: 100%"
       :header-cell-style="{ background: '#adb7c0' }"
@@ -107,6 +106,13 @@
                     单价
                   </template>
                   {{ row.price }}
+                </el-descriptions-item>
+                <el-descriptions-item>
+                  <template slot="label">
+                    <!-- <i class="el-icon-office-building"></i> -->
+                    件数
+                  </template>
+                  {{ row.nums }}
                 </el-descriptions-item>
               </el-descriptions>
             </el-col>
@@ -408,7 +414,6 @@
             return
           }
           const values = data.map((item) => Number(item[column.property]))
-          console.log(column, data, values)
           if (!values.every((value) => isNaN(value))) {
             sums[index] = values.reduce((prev, curr) => {
               const value = Number(curr)

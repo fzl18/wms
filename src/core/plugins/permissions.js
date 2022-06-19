@@ -28,7 +28,7 @@ router.beforeEach(async (to, from, next) => {
   // 看是登录
   // let hasLogin = store.getters['user/hasLogin']
   let hasLogin = cookies.get('hasLogin')
-  console.log(hasLogin)
+  // console.log(hasLogin)
   // 如果关闭拦截
   if (!loginInterception) {
     hasLogin = true
@@ -43,6 +43,7 @@ router.beforeEach(async (to, from, next) => {
       // if (roles.length) {
       //   next()
       // } else {
+      //   await store.dispatch('user/getUserMenu')
       //   await store.dispatch('routes/setRoutes')
       //   next({ ...to, replace: true })
       // }

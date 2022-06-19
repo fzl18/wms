@@ -34,7 +34,6 @@ export function convertRouter(asyncRoutes) {
  * @returns {*}
  */
 export function formatRouter(asyncRoutes) {
-  console.log(asyncRoutes)
   asyncRoutes = [
     {
       path: '/',

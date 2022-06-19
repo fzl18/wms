@@ -73,6 +73,7 @@
       </el-table-column>
 
       <el-table-column
+        v-if="!active"
         align="center"
         label="操作"
         show-overflow-tooltip
@@ -117,7 +118,7 @@
     ></el-pagination>
     <table-edit
       ref="edit"
-      :tit="'送货申请单'"
+      :tit="'退货申请单'"
       type="tuihuo"
       @confirm="confirm"
     ></table-edit>
