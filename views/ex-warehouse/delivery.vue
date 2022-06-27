@@ -1,8 +1,8 @@
 <template>
   <div class="custom-table-container">
     <div class="tabs">
-      <div :class="!active ? 'cur' : ''" @click="handleTabs(0)">待开退货单</div>
-      <div :class="active ? 'cur' : ''" @click="handleTabs(1)">已开退货单</div>
+      <div :class="!active ? 'cur' : ''" @click="handleTabs(0)">待开出库单</div>
+      <div :class="active ? 'cur' : ''" @click="handleTabs(1)">已开出库单</div>
     </div>
     <el-table
       ref="tableSort"
@@ -16,36 +16,57 @@
       <el-table-column type="expand">
         <template #default="{ row }">
           <el-row class="expandInfo goods">
-            <el-col :span="18" :offset="3" class="title">货物信息</el-col>
-            <el-col :span="18" :offset="3" class="tbody">
-              <el-descriptions class="" :column="4" size="medium" border>
+            <el-col :span="20" :offset="2" class="title">货物信息</el-col>
+            <el-col :span="20" :offset="2" class="tbody">
+              <el-descriptions
+                v-for="(item, index) in row.goodsList"
+                :key="index"
+                class=""
+                :column="6"
+                size="medium"
+                border
+              >
+                <el-descriptions-item>
+                  <template slot="label">
+                    <!-- <i class="el-icon-office-building"></i> -->
+                    货物名称
+                  </template>
+                  {{ item.itemname }}
+                </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     规格
                   </template>
-                  {{ row.format }}
+                  {{ item.format }}
+                </el-descriptions-item>
+                <el-descriptions-item>
+                  <template slot="label">
+                    <!-- <i class="el-icon-office-building"></i> -->
+                    批号
+                  </template>
+                  {{ item.batchnum }}
                 </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     重量
                   </template>
-                  {{ row.weight }}
+                  {{ item.weight }}
                 </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     单位
                   </template>
-                  {{ row.unit }}
+                  {{ item.unit }}
                 </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     单价
                   </template>
-                  {{ row.price }}
+                  {{ item.price }}
                 </el-descriptions-item>
               </el-descriptions>
             </el-col>
@@ -73,29 +94,35 @@
       </el-table-column>
 
       <el-table-column
-        v-if="!active"
         align="center"
         label="操作"
         show-overflow-tooltip
         :min-width="130"
       >
         <template #default="{ row }">
-          <el-tooltip v-if="!active" content="开具退货单" placement="top">
+          <el-tooltip v-if="!active" content="开具出库单" placement="top">
             <el-button type="text" @click="handleEdit(row)">
               <remix-icon
-                icon-class="share-forward-box-line"
+                icon-class="pages-line"
                 :style="{ fontSize: '18px', color: '#3399d4' }"
               ></remix-icon>
             </el-button>
           </el-tooltip>
-          <!-- <el-tooltip v-if="active" content="删除" placement="top">
-            <el-button type="text" @click="handleDelete(row)">
+          <el-tooltip v-if="active" content="删除" placement="top">
+            <el-button
+              type="text"
+              :disabled="!!row.deliv_status"
+              @click="handleDelete(row)"
+            >
               <remix-icon
                 icon-class="delete-bin-6-line"
-                :style="{ fontSize: '18px', color: '#d4483d' }"
+                :style="{
+                  fontSize: '18px',
+                  color: !!row.deliv_status ? '#ddd' : '#d4483d',
+                }"
               ></remix-icon>
             </el-button>
-          </el-tooltip> -->
+          </el-tooltip>
           <el-tooltip v-if="active" content="打印" placement="top">
             <el-button type="text" @click="handlePrint(row)">
               <remix-icon
@@ -118,23 +145,26 @@
     ></el-pagination>
     <table-edit
       ref="edit"
-      :tit="'退货申请单'"
-      type="tuihuo"
+      :tit="'出库单'"
+      type="delivery"
       @confirm="confirm"
     ></table-edit>
+    <print-temp ref="print" type="delivery"></print-temp>
   </div>
 </template>
 
 <script>
   import _ from 'lodash'
   import TableEdit from './edit.vue'
-  import { busrtnEdit, applyAll } from './api'
+  import PrintTemp from './printTemp.vue'
+  import { busoutboundEdit, applyAll } from './api'
   import dayjs from 'dayjs'
 
   export default {
     name: 'CustomTable',
     components: {
       TableEdit,
+      PrintTemp,
     },
     data() {
       return {
@@ -146,8 +176,8 @@
             prop: '',
           },
           {
-            label: '批号',
-            prop: 'batchnum',
+            label: '单号',
+            prop: this.active == 1 ? 'out_number' : 'number',
           },
           {
             label: '收货单位（客户）',
@@ -181,9 +211,9 @@
           //   prop: 'price',
           // },
           {
-            label: '金额',
+            label: '件数',
             width: 'auto',
-            prop: 'amount',
+            prop: 'nums',
           },
           {
             label: '时间',
@@ -222,18 +252,11 @@
     methods: {
       dayjs,
       getList() {
-        console.log('sdfsdfwefdfef', this.queryForm)
         this.listLoading = true
         if (this.active) {
           applyAll({
             datatype: 1,
-            filter: JSON.stringify({
-              status: 1,
-              out_status: 1,
-              deliv_status: 1,
-              pp_status: 1,
-              rtn_status: 1,
-            }),
+            filter: JSON.stringify({ status: 1, out_status: 1 }),
             offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
             limit: this.queryForm.pageSize,
           }).then((res) => {
@@ -242,21 +265,9 @@
             this.listLoading = false
           })
         } else {
-          console.log('sdfsdfwefdfef', this.queryForm)
-          return
           applyAll({
             datatype: 1,
-            filter: JSON.stringify({
-              status: 1,
-              out_status: 1,
-              deliv_status: 1,
-              pp_status: 1,
-              rtn_status: 0,
-              deliv_time: '23123123123123,1231231231231223',
-            }),
-            op: JSON.stringify({
-              deliv_time: 'between',
-            }),
+            filter: JSON.stringify({ status: 1, out_status: 0 }),
             offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
             limit: this.queryForm.pageSize,
           }).then((res) => {
@@ -274,8 +285,11 @@
       },
       confirm(data) {
         if (data.id) {
-          busrtnEdit({ ...data }).then((res) => {
-            this.$baseMessage('开具成功！', 'success')
+          busoutboundEdit({ ...data, out_status: 1 }).then((res) => {
+            if (res) {
+              this.$baseMessage('开具成功！', 'success')
+              this.$refs.edit.close()
+            }
           })
         }
         this.getList()
@@ -283,7 +297,7 @@
       handleDelete(row) {
         if (row.id) {
           this.$baseConfirm('你确定要删除当前项吗', null, async () => {
-            await busrtnEdit({ ...row, rtn_status: 0 })
+            await busoutboundEdit({ ...row, out_status: 0 })
             this.$baseMessage('删除成功！', 'success')
             await this.getList()
           })
@@ -298,7 +312,9 @@
         this.getList()
       },
 
-      handlePrint(row) {},
+      handlePrint(row) {
+        this.$refs.print.show(row)
+      },
       handleTabs(active) {
         this.active = active
         this.queryForm.pageNo = 1
