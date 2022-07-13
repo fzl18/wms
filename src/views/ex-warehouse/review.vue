@@ -20,36 +20,57 @@
       <el-table-column type="expand">
         <template #default="{ row }">
           <el-row class="expandInfo goods">
-            <el-col :span="18" :offset="3" class="title">货物信息</el-col>
-            <el-col :span="18" :offset="3" class="tbody">
-              <el-descriptions class="" :column="4" size="medium" border>
+            <el-col :span="20" :offset="2" class="title">货物信息</el-col>
+            <el-col :span="20" :offset="2" class="tbody">
+              <el-descriptions
+                v-for="(item, index) in row.goodsList"
+                :key="index"
+                class=""
+                :column="6"
+                size="medium"
+                border
+              >
+                <el-descriptions-item>
+                  <template slot="label">
+                    <!-- <i class="el-icon-office-building"></i> -->
+                    货物名称
+                  </template>
+                  {{ item.itemname }}
+                </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     规格
                   </template>
-                  {{ row.format }}
+                  {{ item.format }}
+                </el-descriptions-item>
+                <el-descriptions-item>
+                  <template slot="label">
+                    <!-- <i class="el-icon-office-building"></i> -->
+                    批号
+                  </template>
+                  {{ item.batchnum }}
                 </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     重量
                   </template>
-                  {{ row.weight }}
+                  {{ item.weight }}
                 </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     单位
                   </template>
-                  {{ row.unit }}
+                  {{ item.unit }}
                 </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     单价
                   </template>
-                  {{ row.price }}
+                  {{ item.price }}
                 </el-descriptions-item>
               </el-descriptions>
             </el-col>
@@ -122,7 +143,19 @@
             style="display: flex; align-items: center; justify-content: center"
           >
             <el-switch
+              v-if="!active"
               v-model="row.status"
+              style="display: block"
+              active-color="#13ce66"
+              inactive-color="orange"
+              active-text="通过"
+              inactive-text="否"
+              size="mini"
+              @change="handleCheck(row)"
+            ></el-switch>
+            <el-switch
+              v-if="active"
+              v-model="row.rtn_status"
               style="display: block"
               active-color="#13ce66"
               inactive-color="orange"
@@ -137,6 +170,14 @@
                 <remix-icon
                   icon-class="edit-2-fill"
                   :style="{ fontSize: '18px', color: '#3399d4' }"
+                ></remix-icon>
+              </el-button>
+            </el-tooltip>
+            <el-tooltip v-if="active" content="查看" placement="top">
+              <el-button type="text" @click="handleDetail(row)">
+                <remix-icon
+                  icon-class="eye-fill"
+                  :style="{ fontSize: '18px', color: '#999' }"
                 ></remix-icon>
               </el-button>
             </el-tooltip>
@@ -157,8 +198,10 @@
       ref="edit"
       :is-edit="true"
       :tit="'送货申请单'"
+      type="apply"
       @confirm="confirm"
     ></table-edit>
+    <PrintTemp ref="view" tit="退货申请单" type="return"></PrintTemp>
   </div>
 </template>
 
@@ -166,12 +209,14 @@
   import _ from 'lodash'
   import TableEdit from './edit.vue'
   import { applyAll, checkEdit, applyEdit } from './api'
+  import PrintTemp from './printTemp.vue'
   import dayjs from 'dayjs'
 
   export default {
     name: 'CustomTable',
     components: {
       TableEdit,
+      PrintTemp,
     },
     data() {
       return {
@@ -183,8 +228,8 @@
             prop: '',
           },
           {
-            label: '批号',
-            prop: 'batchnum',
+            label: '单号',
+            prop: 'number',
           },
           {
             label: '收货单位（客户）',
@@ -217,11 +262,11 @@
           //   width: 'auto',
           //   prop: 'price',
           // },
-          {
-            label: '金额',
-            width: 'auto',
-            prop: 'amount',
-          },
+          // {
+          //   label: '金额',
+          //   width: 'auto',
+          //   prop: 'amount',
+          // },
           {
             label: '时间',
             width: 'auto',
@@ -273,8 +318,11 @@
         applyAll({
           datatype: 1,
           filter: JSON.stringify(
-            this.active == 0 ? { out_status: 0 } : { rtn_status: 1 }
+            this.active == 0 ? { out_status: 0 } : { rtn_uid: 0, pp_status: 1 }
           ),
+          op: JSON.stringify({
+            rtn_uid: '<>',
+          }),
           offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
           limit: this.queryForm.pageSize,
         }).then((res) => {
@@ -296,11 +344,17 @@
       confirm(data) {
         if (data.id) {
           applyEdit(data).then((res) => {
-            this.$baseMessage('编辑成功！', 'success')
+            if (res) {
+              this.$refs.edit.close()
+              this.$baseMessage('编辑成功！', 'success')
+            }
           })
         } else {
           applyAdd(data).then((res) => {
-            this.$baseMessage('添加成功！', 'success')
+            if (res) {
+              this.$refs.edit.close()
+              this.$baseMessage('添加成功！', 'success')
+            }
           })
         }
         this.getList()
@@ -329,12 +383,15 @@
         this.queryForm.pageNo = 1
         this.getList()
       },
+      handleDetail(row) {
+        this.$refs['view'].show(row)
+      },
       handleCheck(row) {
         if (this.active) {
           checkEdit({
             ...row,
             rtn_status: row.rtn_status ? 1 : 0,
-            status: row.status ? 1 : 0,
+            // status: row.status ? 1 : 0,
           }).then((res) => {
             this.$baseMessage('审核成功！', 'success')
             this.getList()
@@ -343,7 +400,7 @@
           checkEdit({
             ...row,
             status: row.status ? 1 : 0,
-            rtn_status: row.rtn_status ? 1 : 0,
+            // rtn_status: row.rtn_status ? 1 : 0,
           }).then((res) => {
             this.$baseMessage('审核成功！', 'success')
             this.getList()

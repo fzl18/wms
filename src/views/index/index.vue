@@ -78,6 +78,22 @@
           <span>统计查询</span>
         </section>
       </el-col>
+      <el-col :span="6">
+        <section
+          v-if="
+            $store.state.user.userGroup == 8 || $store.state.user.userGroup == 4
+          "
+          @click="linkto('user')"
+        >
+          <div class="img">
+            <remix-icon
+              icon-class="user-line"
+              style="font-size: 40px"
+            ></remix-icon>
+          </div>
+          <span>用户管理</span>
+        </section>
+      </el-col>
     </el-row>
   </div>
 </template>
@@ -94,7 +110,9 @@
     created() {
       this.init()
     },
-    mounted() {},
+    mounted() {
+      // console.log(this.$store.state.user)
+    },
     methods: {
       init() {},
       linkto(type) {

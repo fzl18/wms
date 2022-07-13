@@ -68,7 +68,7 @@
         align="center"
         label="操作"
         show-overflow-tooltip
-        :min-width="130"
+        :min-width="120"
       >
         <template #default="{ row }">
           <el-tooltip v-if="!active" content="开具出门证" placement="top">
@@ -140,14 +140,14 @@
             prop: '',
           },
           {
-            label: '批号',
-            prop: 'batchnum',
+            label: '单号',
+            prop: 'number',
           },
-          // {
-          //   label: '收货单位（客户）',
-          //   prop: 'company',
-          //   minWidth: '160',
-          // },
+          {
+            label: '收货单位（客户）',
+            prop: 'company',
+            minWidth: '160',
+          },
 
           {
             label: '货物名称',
@@ -185,18 +185,7 @@
             prop: 'update_time',
           },
         ],
-        list: [
-          {
-            lotNumber: '批号de-32343',
-            customName: '牛XX的客户',
-            unit: '元',
-            weight: '42KG',
-            goodsName: '货物名称',
-            specifications: '323 x 843',
-            total: 1221,
-            price: 5895,
-          },
-        ],
+        list: [{}],
         listLoading: false,
         layout: 'total, sizes, prev, pager, next, jumper',
         total: 0,
@@ -210,6 +199,7 @@
 
     created() {
       this.getList()
+
       //防止三级以上路由时多次走created
       // if (this.$route.name === this.$options.name) this.fetchData()
     },
@@ -260,7 +250,10 @@
       confirm(data) {
         if (data.id) {
           busppEdit({ ...data, pp_status: 1 }).then((res) => {
-            this.$baseMessage('开具成功！', 'success')
+            if (res) {
+              this.$baseMessage('开具成功！', 'success')
+              this.$refs.edit.close()
+            }
           })
         }
         this.getList()
@@ -289,6 +282,58 @@
       handleTabs(active) {
         this.active = active
         this.queryForm.pageNo = 1
+        this.columns = [
+          {
+            label: '序号',
+            width: '50',
+            prop: '',
+          },
+          {
+            label: '单号',
+            prop: this.active == 1 ? 'pp_number' : 'number',
+          },
+          {
+            label: '收货单位（客户）',
+            prop: 'company',
+            minWidth: '160',
+          },
+
+          {
+            label: '货物名称',
+            width: 'auto',
+            prop: 'itemname',
+          },
+          // {
+          //   label: '规格',
+          //   width: 'auto',
+          //   prop: 'specifications',
+          // },
+          {
+            label: '重量',
+            width: 'auto',
+            prop: 'weight',
+          },
+          {
+            label: '单位(KG/T)',
+            width: '120',
+            prop: 'unit',
+          },
+          // {
+          //   label: '单价',
+          //   width: 'auto',
+          //   prop: 'price',
+          // },
+          {
+            label: '件数',
+            width: 'auto',
+            prop: 'nums',
+          },
+          {
+            label: '时间',
+            width: 'auto',
+            prop: 'update_time',
+          },
+        ]
         this.getList()
       },
     },

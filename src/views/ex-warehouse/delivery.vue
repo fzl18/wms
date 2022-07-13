@@ -16,36 +16,58 @@
       <el-table-column type="expand">
         <template #default="{ row }">
           <el-row class="expandInfo goods">
-            <el-col :span="18" :offset="3" class="title">货物信息</el-col>
-            <el-col :span="18" :offset="3" class="tbody">
-              <el-descriptions class="" :column="4" size="medium" border>
+            <el-col :span="20" :offset="2" class="title">货物信息</el-col>
+            <el-col :span="20" :offset="2" class="tbody">
+              <el-descriptions
+                v-for="(item, index) in row.goodsList"
+                :key="index"
+                class=""
+                :column="6"
+                size="medium"
+                border
+              >
+                <el-descriptions-item>
+                  <template slot="label">
+                    <!-- <i class="el-icon-office-building"></i> -->
+                    货物名称
+                  </template>
+                  {{ item.itemname }}
+                </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     规格
                   </template>
-                  {{ row.format }}
+                  {{ item.format }}
+                </el-descriptions-item>
+                <el-descriptions-item>
+                  <template slot="label">
+                    <!-- <i class="el-icon-office-building"></i> -->
+                    批号
+                  </template>
+                  {{ item.batchnum }}
                 </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     重量
                   </template>
-                  {{ row.weight }}
+                  {{ item.weight }}
                 </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     单位
                   </template>
-                  {{ row.unit }}
+                  {{ item.unit }}
                 </el-descriptions-item>
-                <!-- <el-descriptions-item>
+                <el-descriptions-item>
                   <template slot="label">
+                    <!-- <i class="el-icon-office-building"></i> -->
                     单价
                   </template>
-                  {{ row.price }}
-                </el-descriptions-item> -->
+                  {{ item.price }}
+                </el-descriptions-item>
               </el-descriptions>
             </el-col>
           </el-row>
@@ -123,8 +145,8 @@
     ></el-pagination>
     <table-edit
       ref="edit"
-      :tit="'送货申请单'"
-      type="fahuo"
+      :tit="'出库单'"
+      type="delivery"
       @confirm="confirm"
     ></table-edit>
     <print-temp ref="print" type="delivery"></print-temp>
@@ -154,8 +176,8 @@
             prop: '',
           },
           {
-            label: '批号',
-            prop: 'batchnum',
+            label: '单号',
+            prop: 'number',
           },
           {
             label: '收货单位（客户）',
@@ -179,20 +201,20 @@
           //   prop: 'weight',
           // },
           // {
-          //   label: '单位(KG/T)',
-          //   width: '120',
+          //   label: '单位',
+          //   width: '80',
           //   prop: 'unit',
           // },
-          // {
+          // // {
           //   label: '单价',
           //   width: 'auto',
           //   prop: 'price',
           // },
-          {
-            label: '件数',
-            width: 'auto',
-            prop: 'nums',
-          },
+          // {
+          //   label: '数量',
+          //   width: 'auto',
+          //   prop: 'nums',
+          // },
           {
             label: '时间',
             width: 'auto',
@@ -264,7 +286,10 @@
       confirm(data) {
         if (data.id) {
           busoutboundEdit({ ...data, out_status: 1 }).then((res) => {
-            this.$baseMessage('开具成功！', 'success')
+            if (res) {
+              this.$baseMessage('开具成功！', 'success')
+              this.$refs.edit.close()
+            }
           })
         }
         this.getList()
@@ -294,6 +319,113 @@
         this.active = active
         this.queryForm.pageNo = 1
         this.getList()
+        if (active) {
+          this.columns = [
+            {
+              label: '序号',
+              width: '50',
+              prop: '',
+            },
+            {
+              label: '出库单号',
+              prop: 'out_number',
+            },
+            {
+              label: '收货单位（客户）',
+              prop: 'company',
+              minWidth: '160',
+            },
+
+            {
+              label: '货物名称',
+              width: 'auto',
+              prop: 'itemname',
+            },
+            // {
+            //   label: '规格',
+            //   width: 'auto',
+            //   prop: 'specifications',
+            // },
+            {
+              label: '重量',
+              width: 'auto',
+              prop: 'weight',
+            },
+            {
+              label: '单位',
+              width: '80',
+              prop: 'unit',
+            },
+            // {
+            //   label: '单价',
+            //   width: 'auto',
+            //   prop: 'price',
+            // },
+            {
+              label: '数量',
+              width: 'auto',
+              prop: 'nums',
+            },
+            {
+              label: '时间',
+              width: 'auto',
+              prop: 'update_time',
+            },
+          ]
+        } else {
+          this.columns = [
+            {
+              label: '序号',
+              width: '50',
+              prop: '',
+            },
+            {
+              label: '单号',
+              prop: 'number',
+            },
+            {
+              label: '收货单位（客户）',
+              prop: 'company',
+              minWidth: '160',
+            },
+
+            {
+              label: '货物名称',
+              width: 'auto',
+              prop: 'itemname',
+            },
+            // {
+            //   label: '规格',
+            //   width: 'auto',
+            //   prop: 'specifications',
+            // },
+            // {
+            //   label: '重量',
+            //   width: 'auto',
+            //   prop: 'weight',
+            // },
+            // {
+            //   label: '单位',
+            //   width: '80',
+            //   prop: 'unit',
+            // },
+            // // {
+            //   label: '单价',
+            //   width: 'auto',
+            //   prop: 'price',
+            // },
+            {
+              label: '数量',
+              width: 'auto',
+              prop: 'nums',
+            },
+            {
+              label: '时间',
+              width: 'auto',
+              prop: 'update_time',
+            },
+          ]
+        }
       },
     },
   }

@@ -1,10 +1,59 @@
 <template>
   <div class="custom-table-container">
     <div class="tabs">
-      <div :class="!active ? 'cur' : ''" @click="handleTabs(0)">待开退货单</div>
+      <div :class="!active ? 'cur' : ''" @click="handleTabs(0)">
+        查找已完成送货单
+      </div>
       <div :class="active ? 'cur' : ''" @click="handleTabs(1)">已开退货单</div>
     </div>
+    <core-query-form v-if="!active" class="queryForm">
+      <core-query-form-top-panel>
+        <el-form
+          ref="form"
+          :inline="true"
+          :model="queryForm"
+          label-width="80px"
+          @submit.native.prevent
+        >
+          <el-form-item label="送货单号" prop="deliv_number">
+            <el-input v-model="queryForm.deliv_number"></el-input>
+          </el-form-item>
+          <el-form-item label="收货单位" prop="company">
+            <el-input
+              v-model="queryForm.company"
+              placeholder="（客户）"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="日期" prop="date">
+            <el-date-picker
+              v-model="queryForm.date"
+              type="daterange"
+              align="right"
+              unlink-panels
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              :picker-options="pickerOptions"
+              format="yyyy 年 MM 月 dd 日"
+              value-format="timestamp"
+              :default-time="['00:00:00', '23:59:59']"
+            ></el-date-picker>
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              icon="el-icon-search"
+              native-type="submit"
+              type="primary"
+              @click="handleQuery('form')"
+            >
+              查询
+            </el-button>
+          </el-form-item>
+        </el-form>
+      </core-query-form-top-panel>
+    </core-query-form>
     <el-table
+      v-if="list.length || active"
       ref="tableSort"
       v-loading="listLoading"
       :data="list"
@@ -16,40 +65,104 @@
       <el-table-column type="expand">
         <template #default="{ row }">
           <el-row class="expandInfo goods">
-            <el-col :span="18" :offset="3" class="title">货物信息</el-col>
-            <el-col :span="18" :offset="3" class="tbody">
-              <el-descriptions class="" :column="4" size="medium" border>
+            <el-col :span="20" :offset="2" class="title">货物信息</el-col>
+            <el-col :span="20" :offset="2" class="tbody">
+              <el-descriptions
+                v-for="(item, index) in row.goodsList"
+                :key="index"
+                class=""
+                :column="6"
+                size="medium"
+                border
+              >
+                <el-descriptions-item>
+                  <template slot="label">
+                    <!-- <i class="el-icon-office-building"></i> -->
+                    货物名称
+                  </template>
+                  {{ item.itemname }}
+                </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     规格
                   </template>
-                  {{ row.format }}
+                  {{ item.format }}
+                </el-descriptions-item>
+                <el-descriptions-item>
+                  <template slot="label">
+                    <!-- <i class="el-icon-office-building"></i> -->
+                    批号
+                  </template>
+                  {{ item.batchnum }}
                 </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     重量
                   </template>
-                  {{ row.weight }}
+                  {{ item.weight }}
                 </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     单位
                   </template>
-                  {{ row.unit }}
+                  {{ item.unit }}
                 </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     单价
                   </template>
-                  {{ row.price }}
+                  {{ item.price }}
                 </el-descriptions-item>
               </el-descriptions>
             </el-col>
           </el-row>
+          <!-- <el-row v-if="active" class="expandInfo goods">
+            <el-col :span="18" :offset="3" class="title">退货信息</el-col>
+            <el-col :span="18" :offset="3" class="tbody">
+              <el-descriptions class="" :column="4" size="medium" border>
+                <el-descriptions-item>
+                  <template slot="label">
+                    回单
+                  </template>
+                  {{ row.format }}
+                </el-descriptions-item>
+                <el-descriptions-item>
+                  <template slot="label">
+                    收货地址
+                  </template>
+                  {{ row.weight }}
+                </el-descriptions-item>
+                <el-descriptions-item>
+                  <template slot="label">
+                    车型
+                  </template>
+                  {{ row.unit }}
+                </el-descriptions-item>
+                <el-descriptions-item>
+                  <template slot="label">
+                    运输公司
+                  </template>
+                  {{ row.price }}
+                </el-descriptions-item>
+                <el-descriptions-item>
+                  <template slot="label">
+                    运费
+                  </template>
+                  {{ row.price }}
+                </el-descriptions-item>
+                <el-descriptions-item>
+                  <template slot="label">
+                    邮寄费
+                  </template>
+                  {{ row.price }}
+                </el-descriptions-item>
+              </el-descriptions>
+            </el-col>
+          </el-row> -->
         </template>
       </el-table-column>
       <el-table-column
@@ -73,13 +186,20 @@
       </el-table-column>
 
       <el-table-column
-        v-if="!active"
         align="center"
         label="操作"
         show-overflow-tooltip
         :min-width="130"
       >
         <template #default="{ row }">
+          <el-tooltip content="查看" placement="top">
+            <el-button type="text" @click="handleDetial(row)">
+              <remix-icon
+                icon-class="eye-fill"
+                :style="{ fontSize: '18px', color: '#999' }"
+              ></remix-icon>
+            </el-button>
+          </el-tooltip>
           <el-tooltip v-if="!active" content="开具退货单" placement="top">
             <el-button type="text" @click="handleEdit(row)">
               <remix-icon
@@ -88,26 +208,19 @@
               ></remix-icon>
             </el-button>
           </el-tooltip>
-          <!-- <el-tooltip v-if="active" content="删除" placement="top">
-            <el-button type="text" @click="handleDelete(row)">
-              <remix-icon
-                icon-class="delete-bin-6-line"
-                :style="{ fontSize: '18px', color: '#d4483d' }"
-              ></remix-icon>
-            </el-button>
-          </el-tooltip> -->
-          <el-tooltip v-if="active" content="打印" placement="top">
+          <!-- <el-tooltip v-if="active" content="打印" placement="top">
             <el-button type="text" @click="handlePrint(row)">
               <remix-icon
                 icon-class="printer-line"
                 :style="{ fontSize: '18px', color: '#333' }"
               ></remix-icon>
             </el-button>
-          </el-tooltip>
+          </el-tooltip> -->
         </template>
       </el-table-column>
     </el-table>
     <el-pagination
+      v-if="list.length"
       :current-page="queryForm.pageNo"
       :layout="layout"
       :page-size="queryForm.pageSize"
@@ -119,15 +232,21 @@
     <table-edit
       ref="edit"
       :tit="'退货申请单'"
-      type="tuihuo"
+      type="return"
       @confirm="confirm"
     ></table-edit>
+    <PrintTemp
+      ref="return"
+      tit="送货申请单"
+      :type="!active ? 'view' : 'return'"
+    ></PrintTemp>
   </div>
 </template>
 
 <script>
   import _ from 'lodash'
   import TableEdit from './edit.vue'
+  import PrintTemp from './printTemp.vue'
   import { busrtnEdit, applyAll } from './api'
   import dayjs from 'dayjs'
 
@@ -135,6 +254,7 @@
     name: 'CustomTable',
     components: {
       TableEdit,
+      PrintTemp,
     },
     data() {
       return {
@@ -146,8 +266,8 @@
             prop: '',
           },
           {
-            label: '批号',
-            prop: 'batchnum',
+            label: '送货单号',
+            prop: 'deliv_number',
           },
           {
             label: '收货单位（客户）',
@@ -180,29 +300,18 @@
           //   width: 'auto',
           //   prop: 'price',
           // },
-          {
-            label: '金额',
-            width: 'auto',
-            prop: 'amount',
-          },
+          // {
+          //   label: '金额',
+          //   width: 'auto',
+          //   prop: 'amount',
+          // },
           {
             label: '时间',
             width: 'auto',
             prop: 'update_time',
           },
         ],
-        list: [
-          {
-            lotNumber: '批号de-32343',
-            customName: '牛XX的客户',
-            unit: '元',
-            weight: '42KG',
-            goodsName: '货物名称',
-            specifications: '323 x 843',
-            total: 1221,
-            price: 5895,
-          },
-        ],
+        list: [],
         listLoading: false,
         layout: 'total, sizes, prev, pager, next, jumper',
         total: 0,
@@ -210,29 +319,61 @@
         queryForm: {
           pageNo: 1,
           pageSize: 10,
+          company: '',
+          deliv_number: '',
+        },
+        pickerOptions: {
+          shortcuts: [
+            {
+              text: '最近一周',
+              onClick(picker) {
+                const end = new Date()
+                const start = new Date()
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+                picker.$emit('pick', [start, end])
+              },
+            },
+            {
+              text: '最近一个月',
+              onClick(picker) {
+                const end = new Date()
+                const start = new Date()
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
+                picker.$emit('pick', [start, end])
+              },
+            },
+            {
+              text: '最近三个月',
+              onClick(picker) {
+                const end = new Date()
+                const start = new Date()
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
+                picker.$emit('pick', [start, end])
+              },
+            },
+          ],
         },
       }
     },
 
     created() {
-      this.getList()
+      // this.getList()
       //防止三级以上路由时多次走created
       // if (this.$route.name === this.$options.name) this.fetchData()
     },
     methods: {
       dayjs,
       getList() {
-        console.log('sdfsdfwefdfef', this.queryForm)
         this.listLoading = true
         if (this.active) {
           applyAll({
             datatype: 1,
             filter: JSON.stringify({
-              status: 1,
-              out_status: 1,
-              deliv_status: 1,
               pp_status: 1,
-              rtn_status: 1,
+              rtn_uid: 0,
+            }),
+            op: JSON.stringify({
+              rtn_uid: '<>',
             }),
             offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
             limit: this.queryForm.pageSize,
@@ -242,20 +383,27 @@
             this.listLoading = false
           })
         } else {
-          console.log('sdfsdfwefdfef', this.queryForm)
-          return
           applyAll({
             datatype: 1,
             filter: JSON.stringify({
               status: 1,
               out_status: 1,
               deliv_status: 1,
+              company: this.queryForm.company,
+              deliv_number: this.queryForm.deliv_number,
+              deliv_time: this.queryForm.date
+                ? `${Math.floor(this.queryForm.date[0] / 1000)},${Math.floor(
+                    this.queryForm.date[1] / 1000
+                  )}`
+                : '',
+              // ...this.queryForm,
               pp_status: 1,
               rtn_status: 0,
-              deliv_time: '23123123123123,1231231231231223',
             }),
             op: JSON.stringify({
-              deliv_time: 'between',
+              deliv_time: 'BETWEEN',
+              company: 'LIKE',
+              deliv_number: 'LIKE',
             }),
             offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
             limit: this.queryForm.pageSize,
@@ -274,8 +422,11 @@
       },
       confirm(data) {
         if (data.id) {
-          busrtnEdit({ ...data }).then((res) => {
-            this.$baseMessage('开具成功！', 'success')
+          busrtnEdit({ ...data, rtn_status: 0 }).then((res) => {
+            if (res) {
+              this.$refs.edit.close()
+              this.$baseMessage('开具成功！', 'success')
+            }
           })
         }
         this.getList()
@@ -302,7 +453,50 @@
       handleTabs(active) {
         this.active = active
         this.queryForm.pageNo = 1
+        this.columns = [
+          {
+            label: '序号',
+            width: '50',
+            prop: '',
+          },
+          {
+            label: active ? '退货单号' : '送货单号',
+            prop: active ? 'rtn_number' : 'deliv_number',
+          },
+          {
+            label: '收货单位（客户）',
+            prop: 'company',
+            minWidth: '160',
+          },
+
+          {
+            label: '货物名称',
+            width: 'auto',
+            prop: 'itemname',
+          },
+          {
+            label: '金额',
+            width: 'auto',
+            prop: 'amount',
+          },
+          {
+            label: '时间',
+            width: 'auto',
+            prop: 'update_time',
+          },
+        ]
+        if (active) {
+          this.getList()
+        } else {
+          this.list = []
+          // this.handleQuery()
+        }
+      },
+      handleQuery() {
         this.getList()
+      },
+      handleDetial(row) {
+        this.$refs['return'].show(row)
       },
     },
   }

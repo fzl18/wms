@@ -1,21 +1,52 @@
 <template>
   <div class="custom-table-container">
     <core-query-form>
-      <core-query-form-left-panel>
+      <core-query-form-top-panel>
         <el-button
           icon="el-icon-plus"
           type="success"
           size="big"
           @click="handleAdd"
         >
-          添加
+          新建
         </el-button>
-        <!-- <el-button icon="el-icon-delete" type="danger" @click="handleDelete">
-          删除
-        </el-button> -->
-      </core-query-form-left-panel>
-      <!-- <core-query-form-right-panel>
-      </core-query-form-right-panel> -->
+        <!-- <el-form
+          ref="form"
+          :inline="true"
+          :model="queryForm"
+          label-width="80px"
+          @submit.native.prevent
+        >
+          <el-form-item label="单号" prop="number">
+            <el-input v-model="queryForm.number" placeholder="单号"></el-input>
+          </el-form-item>
+          <el-form-item label="收货单位" prop="company">
+            <el-input
+              v-model="queryForm.company"
+              placeholder="（客户）"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="货物名称" prop="itemname">
+            <el-input
+              v-model="queryForm.itemname"
+              placeholder="货物名称"
+            ></el-input>
+          </el-form-item>
+          <el-form-item label="金额" prop="amount">
+            <el-input v-model="queryForm.amount" placeholder="金额"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button
+              icon="el-icon-search"
+              native-type="submit"
+              type="primary"
+              @click="handleQuery('form')"
+            >
+              查询
+            </el-button>
+          </el-form-item>
+        </el-form> -->
+      </core-query-form-top-panel>
     </core-query-form>
 
     <div class="tabs">
@@ -34,36 +65,57 @@
       <el-table-column type="expand">
         <template #default="{ row }">
           <el-row class="expandInfo goods">
-            <el-col :span="18" :offset="3" class="title">货物信息</el-col>
-            <el-col :span="18" :offset="3" class="tbody">
-              <el-descriptions class="" :column="4" size="medium" border>
+            <el-col :span="20" :offset="2" class="title">货物信息</el-col>
+            <el-col :span="20" :offset="2" class="tbody">
+              <el-descriptions
+                v-for="(item, index) in row.goodsList"
+                :key="index"
+                class=""
+                :column="6"
+                size="medium"
+                border
+              >
+                <el-descriptions-item>
+                  <template slot="label">
+                    <!-- <i class="el-icon-office-building"></i> -->
+                    货物名称
+                  </template>
+                  {{ item.itemname }}
+                </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     规格
                   </template>
-                  {{ row.format }}
+                  {{ item.format }}
+                </el-descriptions-item>
+                <el-descriptions-item>
+                  <template slot="label">
+                    <!-- <i class="el-icon-office-building"></i> -->
+                    批号
+                  </template>
+                  {{ item.batchnum }}
                 </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     重量
                   </template>
-                  {{ row.weight }}
+                  {{ item.weight }}
                 </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     单位
                   </template>
-                  {{ row.unit }}
+                  {{ item.unit }}
                 </el-descriptions-item>
                 <el-descriptions-item>
                   <template slot="label">
                     <!-- <i class="el-icon-office-building"></i> -->
                     单价
                   </template>
-                  {{ row.price }}
+                  {{ item.price }}
                 </el-descriptions-item>
               </el-descriptions>
             </el-col>
@@ -126,6 +178,24 @@
       </el-table-column>
 
       <el-table-column
+        v-if="active"
+        align="center"
+        label="操作"
+        show-overflow-tooltip
+        :min-width="130"
+      >
+        <template #default="{ row }">
+          <el-tooltip content="查看" placement="top">
+            <el-button type="text" @click="handleDetial(row)">
+              <remix-icon
+                icon-class="eye-fill"
+                :style="{ fontSize: '18px', color: '#999' }"
+              ></remix-icon>
+            </el-button>
+          </el-tooltip>
+        </template>
+      </el-table-column>
+      <el-table-column
         v-if="!active"
         align="center"
         label="操作"
@@ -133,6 +203,14 @@
         :min-width="130"
       >
         <template #default="{ row }">
+          <el-tooltip content="查看" placement="top">
+            <el-button type="text" @click="handleDetial(row)">
+              <remix-icon
+                icon-class="eye-fill"
+                :style="{ fontSize: '18px', color: '#999' }"
+              ></remix-icon>
+            </el-button>
+          </el-tooltip>
           <el-tooltip content="编辑" placement="top">
             <el-button type="text" @click="handleEdit(row)">
               <remix-icon
@@ -205,16 +283,18 @@
       ref="edit"
       :is-edit="true"
       :tit="'送货申请单'"
-      type="amount"
+      type="apply"
       @confirm="confirm"
     ></table-edit>
+    <PrintTemp ref="view" tit="送货申请单" type="view"></PrintTemp>
   </div>
 </template>
 
 <script>
   import _ from 'lodash'
-  import { doDelete, getList } from '@/api/table'
+  // import { doDelete, getList } from '@/api/table'
   import TableEdit from './edit.vue'
+  import PrintTemp from './printTemp.vue'
   import { applyList, applyAdd, applyEdit, applyDel } from './api'
   import dayjs from 'dayjs'
 
@@ -222,6 +302,7 @@
     name: 'CustomTable',
     components: {
       TableEdit,
+      PrintTemp,
     },
     data() {
       return {
@@ -233,8 +314,8 @@
             prop: '',
           },
           {
-            label: '批号',
-            prop: 'batchnum',
+            label: '单号',
+            prop: 'number',
           },
           {
             label: '收货单位（客户）',
@@ -267,11 +348,11 @@
           //   width: 'auto',
           //   prop: 'price',
           // },
-          {
-            label: '金额',
-            width: 'auto',
-            prop: 'amount',
-          },
+          // {
+          //   label: '金额',
+          //   width: 'auto',
+          //   prop: 'amount',
+          // },
           {
             label: '时间',
             width: 'auto',
@@ -297,6 +378,10 @@
         queryForm: {
           pageNo: 1,
           pageSize: 10,
+          amount: '',
+          batchnum: '',
+          itemname: '',
+          company: '',
         },
       }
     },
@@ -332,7 +417,26 @@
         })
       },
       handleAdd() {
-        this.$refs['edit'].showEdit()
+        let form = {
+          company: '',
+          goodsList: [
+            {
+              itemname: '',
+              format: '',
+              weight: 0,
+              price: 0,
+              amount: 0,
+              unit: '',
+              nums: 0,
+              batchnum: '',
+              remark: '',
+            },
+          ],
+        }
+        this.$refs['edit'].showEdit(form)
+      },
+      handleDetial(row) {
+        this.$refs['view'].show(row)
       },
       handleEdit(row) {
         this.$refs['edit'].showEdit(row)
@@ -341,10 +445,12 @@
         if (data.id) {
           applyEdit(data).then((res) => {
             this.$baseMessage('编辑成功！', 'success')
+            this.$refs.edit.close()
           })
         } else {
           applyAdd(data).then((res) => {
             this.$baseMessage('添加成功！', 'success')
+            this.$refs.edit.close()
           })
         }
         this.getList()
@@ -372,6 +478,19 @@
         this.active = active
         this.queryForm.pageNo = 1
         this.getList()
+      },
+      handleQuery() {
+        this.listLoading = true
+        applyList({
+          datatype: 1,
+          filter: JSON.stringify({ status: this.active }),
+          offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
+          limit: this.queryForm.pageSize,
+        }).then((res) => {
+          this.list = res.rows
+          this.total = res.total
+          this.listLoading = false
+        })
       },
     },
   }

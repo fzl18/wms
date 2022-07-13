@@ -170,6 +170,16 @@ export const asyncRoutes = [
           remixIcon: 'table-2',
         },
       },
+      {
+        path: 'user',
+        name: 'user',
+        hidden: true,
+        component: () => import('@/views/ex-warehouse/user'),
+        meta: {
+          title: '用户管理',
+          remixIcon: 'user-line',
+        },
+      },
     ],
   },
 

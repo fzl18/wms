@@ -26,6 +26,14 @@ export function getMenu(data) {
 }
 
 //==================== 送货申请单
+export function userAll(data) {
+  //列表
+  return request({
+    url: 'busrwaybill/user_all',
+    method: 'post',
+    data,
+  })
+}
 export function applyAll(data) {
   //列表
   return request({
@@ -37,7 +45,7 @@ export function applyAll(data) {
 export function applyList(data) {
   //列表
   return request({
-    url: 'busrwaybill/index',
+    url: 'busrwaybill/all',
     method: 'post',
     data,
   })
@@ -197,6 +205,58 @@ export function busrtnDel(data) {
   //删除
   return request({
     url: 'busrtn/del',
+    method: 'post',
+    data,
+  })
+}
+
+// 用户模块 ==============================================
+export function userPwd(data) {
+  //删除
+  return request({
+    url: 'user/pwd',
+    method: 'post',
+    data,
+  })
+}
+
+export function userIndex(data) {
+  //用户列表
+  return request({
+    url: 'user/index',
+    method: 'post',
+    data,
+  })
+}
+export function userGroupList(data) {
+  //组列表
+  return request({
+    url: 'user/groupList',
+    method: 'post',
+    data,
+  })
+}
+export function userEdit(data) {
+  //编辑
+  return request({
+    url: 'user/edit',
+    method: 'post',
+    data,
+  })
+}
+export function userAdd(data) {
+  //编辑
+  return request({
+    url: 'user/add',
+    method: 'post',
+    data,
+  })
+}
+
+export function userDel(data) {
+  //删除
+  return request({
+    url: 'user/del',
     method: 'post',
     data,
   })

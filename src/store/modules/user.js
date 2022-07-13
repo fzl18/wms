@@ -20,6 +20,7 @@ const state = {
   avatar: '',
   hasLogin: false,
   roles: [],
+  userGroup: null,
 }
 const getters = {
   accessToken: (state) => state.accessToken,
@@ -27,6 +28,7 @@ const getters = {
   avatar: (state) => state.avatar,
   hasLogin: (state) => state.hasLogin,
   roles: (state) => state.roles,
+  userGroup: (state) => state.userGroup,
 }
 const mutations = {
   /**
@@ -51,6 +53,9 @@ const mutations = {
   },
   setRoles(state, roles) {
     state.roles = roles
+  },
+  setUserGroup(state, userGroup) {
+    state.userGroup = userGroup
   },
 
   /**
@@ -89,6 +94,7 @@ const actions = {
       commit('setHasLogin', true)
       Cookies.set(`hasLogin`, true)
       commit('setUsername', data.name || '无名')
+      localStorage.name = data.name
       const roles = []
       if (data.menu) {
         data.menu.map((item) => {
@@ -102,6 +108,7 @@ const actions = {
         })
       }
       commit('setRoles', roles)
+      commit('setUserGroup', data.group_id)
       let routeList = await store.dispatch('routes/setRoutes')
       router.addRoutes(routeList)
 

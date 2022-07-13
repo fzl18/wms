@@ -1,5 +1,6 @@
 <template>
-  <div v-if="errorLogs.length > 0">
+  <!-- <div v-if="errorLogs.length > 0"> -->
+  <div v-if="false">
     <el-badge
       :value="errorLogs.length"
       @click.native="dialogTableVisible = true"

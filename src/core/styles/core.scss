@@ -250,3 +250,13 @@ html {
 .el-table th .cell{
   color: #fff!important;
 }
+
+.el-form-item__error {
+  position: absolute !important;
+  top: 25% !important;
+  right: 10px !important;
+  left:inherit!important;
+}
+.el-form--inline .el-form-item__content {
+  display: inherit !important;
+}
