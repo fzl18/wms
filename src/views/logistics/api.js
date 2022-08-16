@@ -210,62 +210,26 @@ export function busrtnDel(data) {
   })
 }
 
-// 用户模块 ==============================================
-export function userPwd(data) {
-  //删除
-  return request({
-    url: 'user/pwd',
-    method: 'post',
-    data,
-  })
-}
-
-export function userIndex(data) {
-  //用户列表
-  return request({
-    url: 'user/index',
-    method: 'post',
-    data,
-  })
-}
-export function userGroupList(data) {
-  //组列表
-  return request({
-    url: 'user/groupList',
-    method: 'post',
-    data,
-  })
-}
-export function userEdit(data) {
-  //编辑
-  return request({
-    url: 'user/edit',
-    method: 'post',
-    data,
-  })
-}
-export function userAdd(data) {
-  //编辑
-  return request({
-    url: 'user/add',
-    method: 'post',
-    data,
-  })
-}
-
-export function userDel(data) {
-  //删除
-  return request({
-    url: 'user/del',
-    method: 'post',
-    data,
-  })
-}
-
 export function buscusIndex(data) {
   //客户与运输公司表列表
   return request({
     url: 'buscus/index',
+    method: 'post',
+    data,
+  })
+}
+export function buslogisticsEdit(data) {
+  // 物流信息编辑
+  return request({
+    url: 'buslogistics/edit',
+    method: 'post',
+    data,
+  })
+}
+export function buslogisticsDel(data) {
+  //物流信息删除
+  return request({
+    url: 'buslogistics/del',
     method: 'post',
     data,
   })

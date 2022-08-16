@@ -219,6 +219,9 @@
             offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
             limit: this.queryForm.pageSize,
           }).then((res) => {
+            res.rows.map(
+              (item) => (item.pp_time = dayjs(item.pp_time * 1000).format())
+            )
             this.list = res.rows
             this.total = res.total
             this.listLoading = false
@@ -235,6 +238,9 @@
             offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
             limit: this.queryForm.pageSize,
           }).then((res) => {
+            res.rows.map(
+              (item) => (item.pp_time = dayjs(item.pp_time * 1000).format())
+            )
             this.list = res.rows
             this.total = res.total
             this.listLoading = false
@@ -331,7 +337,7 @@
           {
             label: '时间',
             width: 'auto',
-            prop: 'update_time',
+            prop: this.active == 1 ? 'pp_time' : 'update_time',
           },
         ]
         this.getList()

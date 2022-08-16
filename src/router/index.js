@@ -64,7 +64,7 @@ export const asyncRoutes = [
         meta: {
           title: '首页',
           remixIcon: 'home-4-line',
-          affix: true,
+          // tagHidden: true,
         },
       },
       {
@@ -89,17 +89,29 @@ export const asyncRoutes = [
       },
     ],
   },
+
   {
     path: '/exwarehouse',
     name: 'exwarehouse',
     component: Layout,
-    redirect: '/exwarehouse/applylist',
+    redirect: '/exwarehouse/index',
     alwaysShow: true,
     meta: {
       title: '出库',
       remixIcon: 'shopping-cart-line',
     },
     children: [
+      {
+        path: 'index',
+        name: 'index',
+        component: () => import('@/views/index'),
+        hidden: true,
+        meta: {
+          title: '出库',
+          remixIcon: 'shopping-cart-line',
+          tagHidden: true,
+        },
+      },
       {
         path: 'applylist',
         name: 'applylist',
@@ -215,6 +227,96 @@ export const asyncRoutes = [
   //     },
   //   ],
   // },
+  {
+    path: '/logistics',
+    name: 'logistics',
+    component: Layout,
+    redirect: '/logistics/index',
+    // hidden: true,
+    meta: {
+      title: '物流',
+      remixIcon: 'bus-2-line',
+      affix: false,
+    },
+    children: [
+      {
+        path: 'index',
+        name: 'index',
+        component: () => import('@/views/logistics/index'),
+        hidden: true,
+        meta: {
+          title: '物流',
+          remixIcon: 'bus-2-line',
+          tagHidden: true,
+        },
+      },
+      {
+        path: 'info',
+        name: 'Info',
+        hidden: true,
+        component: () => import('@/views/logistics/info'),
+        meta: {
+          title: '物流信息',
+          remixIcon: 'bus-2-line',
+        },
+      },
+      {
+        path: 'review',
+        name: 'Review',
+        hidden: true,
+        component: () => import('@/views/logistics/review'),
+        meta: {
+          title: '物流审核',
+          remixIcon: 'search-eye-line',
+        },
+      },
+    ],
+  },
+  {
+    path: '/info',
+    name: 'info',
+    component: Layout,
+    redirect: '/info/index',
+    // hidden: true,
+    meta: {
+      title: '资料',
+      remixIcon: 'profile-line',
+      affix: false,
+    },
+    children: [
+      {
+        path: 'index',
+        name: 'index',
+        component: () => import('@/views/info/index'),
+        hidden: true,
+        meta: {
+          title: '资料',
+          remixIcon: 'user-star-line',
+          tagHidden: true,
+        },
+      },
+      {
+        path: 'customer',
+        name: 'Customer',
+        hidden: true,
+        component: () => import('@/views/info/customer'),
+        meta: {
+          title: '客户信息',
+          remixIcon: 'user-star-line',
+        },
+      },
+      {
+        path: 'transit',
+        name: 'Transit',
+        hidden: true,
+        component: () => import('@/views/info/transit'),
+        meta: {
+          title: '运输公司',
+          remixIcon: 'truck-line',
+        },
+      },
+    ],
+  },
   {
     path: '*',
     redirect: '/404',

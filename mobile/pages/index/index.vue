@@ -9,34 +9,64 @@
 			</view>
 		</u-navbar>
 		<view class="body">
-			<view class="title">
-				<view>出库</view>
-			</view>
-			<u-grid @click="click" col="3">
-				<u-grid-item class="item" v-for="(menuListItem,menuListIndex) in menuList" :key="menuListIndex"
-					>
-					<u-icon :customStyle="{padding:30+'upx',background:'#2773ff',borderRadius:'50%',color:'#fff'}"
-						:name="menuListItem.name" :size="40"></u-icon>
-					<text class="grid-text">{{menuListItem.title}}</text>
-				</u-grid-item>
-			</u-grid>
+			<swiper :indicator-dots="true" class="swiper" indicatorActiveColor="#2773ff" autoplay="true" @change="(i)=> current = i.target.current ">
+				<swiper-item>
+					<view class="title">
+						<view>出库</view>
+					</view>
+					<u-grid @click="click" col="3">
+						<u-grid-item class="item" v-for="(menuListItem,menuListIndex) in menuList" :key="menuListIndex">
+							<u-icon
+								:customStyle="{padding:30+'upx',background:'#2773ff',borderRadius:'50%',color:'#fff'}"
+								:name="menuListItem.name" :size="40"></u-icon>
+							<text class="grid-text">{{menuListItem.title}}</text>
+						</u-grid-item>
+					</u-grid>
+				</swiper-item>
+				<swiper-item v-if="wlList.length">
+					<view class="title">
+						<view>物流</view>
+					</view>
+					<u-grid @click="click" col="3">
+						<u-grid-item class="item" v-for="(menuListItem,menuListIndex) in wlList" :key="menuListIndex">
+							<u-icon
+								:customStyle="{padding:30+'upx',background:'#2773ff',borderRadius:'50%',color:'#fff'}"
+								:name="menuListItem.name" :size="40"></u-icon>
+							<text class="grid-text">{{menuListItem.title}}</text>
+						</u-grid-item>
+					</u-grid>
+				</swiper-item>
+				<swiper-item v-if="baseList.length">
+					<view class="title">
+						<view>基本资料</view>
+					</view>
+					<u-grid @click="click" col="3">
+						<u-grid-item class="item" v-for="(menuListItem,menuListIndex) in baseList" :key="menuListIndex">
+							<u-icon
+								:customStyle="{padding:30+'upx',background:'#2773ff',borderRadius:'50%',color:'#fff'}"
+								:name="menuListItem.name" :size="40"></u-icon>
+							<text class="grid-text">{{menuListItem.title}}</text>
+						</u-grid-item>
+					</u-grid>
+				</swiper-item>
+
+			</swiper>
 		</view>
+
+
 		<u-popup :show="popShow" round="20" :closeable="true" @close="close" mode="right">
 			<view class="popBox">
 				<u-icon name="account" size="50" color="#fff" @click="logout" class="account"></u-icon>
 				<text class="name">{{name}}</text>
 				<view class="pwbox" v-if="boxShow">
-					<u--input placeholder="原密码" password border="bottom"
-    clearable v-model="oldpwd"></u--input>
-					<u--input placeholder="新密码" border="bottom"
-    clearable v-model="pwd"></u--input>
-					<u--input placeholder="再次输入密码" border="bottom"
-    clearable v-model="confirm_pwd"></u--input>
+					<u--input placeholder="原密码" password border="bottom" clearable v-model="oldpwd"></u--input>
+					<u--input placeholder="新密码" border="bottom" clearable v-model="pwd"></u--input>
+					<u--input placeholder="再次输入密码" border="bottom" clearable v-model="confirm_pwd"></u--input>
 					<text class="logout" @click="changePassword()">提交</text>
 				</view>
 				<text class="logout" @click="boxShow = true">修改密码</text>
 				<text class="logout" @click="logout">退出</text>
-				
+
 			</view>
 		</u-popup>
 		<u-toast ref="uToast" />
@@ -47,56 +77,94 @@
 	export default {
 		data() {
 			return {
+				current: 0,
 				oldpwd: '',
 				pwd: '',
 				confirm_pwd: '',
-				boxShow:false,
+				boxShow: false,
 				popShow: false,
 				name: '',
-				initList:[{
+				initList: [{
 						name: 'list-dot',
 						title: '送货申请单',
 						url: '../list/apply',
-						key: 'rway'
+						key: 'rway',
+						type:'menuList'
 					},
 					{
 						name: 'lock',
 						title: '审核',
 						url: '../list/review',
-						key: 'cway'
+						key: 'cway',
+						type:'menuList'
 					},
 					{
 						name: 'share-square',
 						title: '出库单',
 						url: '../list/delivery',
-						key: 'out'
+						key: 'out',
+						type:'menuList'
 					},
 					{
 						name: 'car',
 						title: '送货单',
 						url: '../list/shipping',
-						key: 'del'
+						key: 'del',
+						type:'menuList'
 					},
 					{
 						name: 'coupon',
 						title: '出门证',
 						url: '../list/permit',
-						key: 'go'
+						key: 'go',
+						type:'menuList'
 					},
 					{
 						name: 'order',
 						title: '退货申请单',
 						url: '../list/returnOrder',
-						key: 'rtn'
+						key: 'rtn',
+						type:'menuList'
 					},
 					{
 						name: 'grid',
 						title: '查询统计',
 						url: '../list/count',
-						key: 'stats'
+						key: 'stats',
+						type:'menuList'
 					},
+					{
+						name: 'man-add',
+						title: '客户信息',
+						url: '../baseInfo/customer',
+						key: 'stats',
+						type:'baseList'
+					},
+					{
+						name: 'car',
+						title: '运输公司',
+						url: '../baseInfo/transit',
+						key: 'stats',
+						type:'baseList'
+					},
+					{
+						name: 'chat',
+						title: '物流信息',
+						url: '../logistics/info',
+						key: 'stats',
+						type:'wlList'
+					},
+					// {
+					// 	name: 'lock',
+					// 	title: '物流审核',
+					// 	url: '../logistics/review',
+					// 	key: 'stats',
+					// 	type:'wlList'
+					// },
 				],
-				menuList: []
+				menuList: [],
+				wlList:[],
+				baseList:[],
 			}
 		},
 		components: {
@@ -111,13 +179,13 @@
 			const roles = []
 			if (menu) {
 				const list = []
-				menu.map((item) => {					
+				menu.map((item) => {
 					if (item.name == 'bus') {
 						item.childlist.map((val) => {
 							if (val.ismenu) {
 								this.initList.map(data => {
 									if (data.key == val.remark) {
-										list.push(data)
+										this[data.type].push(data)
 										// data.enable = true
 									}
 								})
@@ -125,16 +193,31 @@
 						})
 					}
 				})
-				this.menuList = list
+				// this.menuList = list
 			}
 			this.name = this.$store.state.home.userInfo.name
 		},
 		mounted() {},
 		methods: {
 			click(name) {
+				console.log(name, this.current);
 				// this.$refs.uToast.success(`点击了第${name}个`)
+				let url = ''
+				switch (this.current){
+					case 0:
+					url = this.menuList[name].url
+						break;
+					case 1:
+					url = this.wlList[name].url
+						break;
+					case 2:
+					url = this.baseList[name].url
+						break;
+					default:
+						break;
+				}
 				uni.navigateTo({
-					url: this.menuList[name].url //'../outstorage/outstorage'
+					url: url //'../outstorage/outstorage'
 				})
 			},
 			handleUser() {
@@ -151,8 +234,8 @@
 			changePassword() {
 				console.log(this.$store.state.home.userInfo)
 				let pass = true
-				if(this.oldpwd && this.pwd && this.confirm_pwd){
-					if(this.pwd !== this.confirm_pwd){
+				if (this.oldpwd && this.pwd && this.confirm_pwd) {
+					if (this.pwd !== this.confirm_pwd) {
 						uni.showToast({
 							duration: 1500,
 							icon: 'none',
@@ -160,7 +243,7 @@
 						});
 						pass = false
 					}
-				}else{
+				} else {
 					uni.showToast({
 						duration: 1500,
 						icon: 'none',
@@ -168,15 +251,15 @@
 					});
 					pass = false
 				}
-				if(!pass){
+				if (!pass) {
 					return
 				}
 				api.post({
 					url: 'user/pwd',
 					data: {
-						oldpwd:this.oldpwd,
-						password:this.pwd,
-						confirm_pwd:this.confirm_pwd
+						oldpwd: this.oldpwd,
+						password: this.pwd,
+						confirm_pwd: this.confirm_pwd
 					},
 					success: data => {
 						console.log(data)
@@ -255,6 +338,10 @@
 			border-radius: 40upx;
 			margin: 80upx 50upx 30upx 50upx;
 			width: 100%;
+
+			.swiper {
+				height: calc(80vh - 200upx);
+			}
 		}
 	}
 
@@ -305,11 +392,13 @@
 			border-radius: 50upx;
 			margin: 20upx;
 		}
-		.pwbox{
+
+		.pwbox {
 			margin: 20upx 10upx 50upx 10upx;
-			padding:20upx;
+			padding: 20upx;
 			text-align: center;
-			.logout{
+
+			.logout {
 				display: inline-block;
 				background-color: #75d891;
 				border-color: #53c764;

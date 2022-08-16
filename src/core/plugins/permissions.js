@@ -56,11 +56,11 @@ router.beforeEach(async (to, from, next) => {
           next()
         } else {
           await store.dispatch('user/getUserMenu')
-          let routeList = await store.dispatch(
-            'routes/setRoutes',
-            authentication
-          )
-          router.addRoutes(routeList)
+          // let routeList = await store.dispatch(
+          //   'routes/setRoutes',
+          //   authentication
+          // )
+          // router.addRoutes(routeList)
           next()
         }
       } else {

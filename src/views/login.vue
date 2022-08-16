@@ -340,6 +340,8 @@
                   text-indent: 5px;
                   text-align: center;
                   cursor: pointer;
+                  position: relative;
+                  z-index: 9999;
                   transition: all ease 0.2s;
                   &:hover {
                     border-color: #c0c4cc;

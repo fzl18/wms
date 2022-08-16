@@ -214,6 +214,7 @@ export function formatRouter(asyncRoutes) {
  * @returns {[]}
  */
 export function filterRoutes(routes, baseUrl = '/') {
+  // console.log(routes)
   return routes
     .filter((route) => {
       if (rolesControl && route.meta && route.meta.roles)

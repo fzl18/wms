@@ -378,6 +378,9 @@
             offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
             limit: this.queryForm.pageSize,
           }).then((res) => {
+            res.rows.map(
+              (item) => (item.rtn_time = dayjs(item.rtn_time * 1000).format())
+            )
             this.list = res.rows
             this.total = res.total
             this.listLoading = false
@@ -408,6 +411,9 @@
             offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
             limit: this.queryForm.pageSize,
           }).then((res) => {
+            res.rows.map(
+              (item) => (item.rtn_time = dayjs(item.rtn_time * 1000).format())
+            )
             this.list = res.rows
             this.total = res.total
             this.listLoading = false

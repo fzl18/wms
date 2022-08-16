@@ -55,9 +55,7 @@
               </div>
             </div>
 
-            <div class="date">
-              日期：{{ dayjs().format('YYYY年 MM月 DD日') }}
-            </div>
+            <div class="date">日期：{{ dayjs().format('YYYY年MM月DD日') }}</div>
           </div>
           <div>
             <div class="">
@@ -72,11 +70,16 @@
                   {
                     required: true,
                     message: '必填',
-                    trigger: 'blur',
+                    trigger: 'change',
                   },
                 ]"
               >
-                <el-input v-model="form.company"></el-input>
+                <!-- <el-input v-model="form.company"></el-input> -->
+                <el-autocomplete
+                  v-model="form.company"
+                  :fetch-suggestions="getCustomerList"
+                  @select="handleSelect"
+                ></el-autocomplete>
               </el-form-item>
             </div>
           </div>
@@ -93,6 +96,8 @@
                 <th width="5%">重量</th>
                 <th width="5%">单位</th>
                 <th width="5%">单价</th>
+                <th width="5%">数量</th>
+                <th width="5%">托/箱</th>
                 <!-- <th width="10%">金额</th> -->
                 <th width="5%">操作</th>
               </tr>
@@ -158,6 +163,7 @@
                     ></el-input>
                   </el-form-item>
                 </td>
+
                 <td>
                   <el-form-item
                     label=""
@@ -172,7 +178,8 @@
                   >
                     <el-input-number
                       v-model.number="item.weight"
-                      :precision="1"
+                      :precision="3"
+                      :min="0"
                       size="mini"
                     ></el-input-number>
                   </el-form-item>
@@ -208,96 +215,8 @@
                   >
                     <el-input-number
                       v-model.number="item.price"
-                      :precision="2"
+                      :precision="3"
                     ></el-input-number>
-                  </el-form-item>
-                </td>
-                <!-- <td>
-                  <el-form-item label="" :prop="`goodsList.${index}.amount`">
-                    <el-input v-model="item.amount"></el-input>
-                  </el-form-item>
-                </td> -->
-                <td>
-                  <i
-                    class="el-icon-delete"
-                    style="color: red"
-                    @click="handleDel(item)"
-                  ></i>
-                </td>
-              </tr>
-              <tr>
-                <td colspan="8">
-                  <div class="remark">
-                    <span>备注：</span>
-                    <el-form-item label="" :prop="`remark`">
-                      <el-input
-                        v-model="form.remark"
-                        rows="3"
-                        type="textarea"
-                        style="width: 100%"
-                      ></el-input>
-                    </el-form-item>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <td colspan="8">
-                  <span class="add">
-                    <i
-                      class="el-icon-circle-plus-outline"
-                      @click="handleAdd"
-                    ></i>
-                  </span>
-                </td>
-              </tr>
-            </table>
-          </div>
-
-          <!--      出库单    -->
-          <div v-if="type == 'delivery'" class="body">
-            <table cellpadding="0" cellspacing="0" border="0">
-              <tr>
-                <th width="5%">序号</th>
-                <th width="15%">货物名称</th>
-                <th width="15%">规格</th>
-                <!-- <th width="15%">备注</th> -->
-                <th width="10%">批号</th>
-                <th width="10%">数量</th>
-                <th width="10%">托/箱</th>
-                <th width="10%">重量</th>
-                <th width="5%">KG/T</th>
-              </tr>
-              <tr v-for="(item, index) in form.goodsList" :key="index">
-                <td>{{ index + 1 }}</td>
-                <td>
-                  {{ item.itemname }}
-                </td>
-                <td>
-                  {{ item.format }}
-                </td>
-                <!-- <td>
-                  <el-form-item label="" :prop="`goodsList.${index}.remark`">
-                    <el-input
-                      v-model="item.remark"
-                      rows="1"
-                      type="textarea"
-                      size="mini"
-                    ></el-input>
-                  </el-form-item>
-                </td> -->
-                <td>
-                  <el-form-item
-                    label=""
-                    :prop="`goodsList.${index}.batchnum`"
-                    :rules="[
-                      {
-                        required: true,
-                        message: '必填',
-                        trigger: 'blur',
-                      },
-                    ]"
-                  >
-                    <el-input v-model="item.batchnum" size="mini"></el-input>
                   </el-form-item>
                 </td>
                 <td>
@@ -355,6 +274,95 @@
                     </el-select>
                   </el-form-item>
                 </td>
+                <!-- <td>
+                  <el-form-item label="" :prop="`goodsList.${index}.amount`">
+                    <el-input v-model="item.amount"></el-input>
+                  </el-form-item>
+                </td> -->
+                <td>
+                  <i
+                    class="el-icon-delete"
+                    style="color: red"
+                    @click="handleDel(item)"
+                  ></i>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="10">
+                  <div class="remark">
+                    <span>备注：</span>
+                    <el-form-item label="" :prop="`remark`">
+                      <el-input
+                        v-model="form.remark"
+                        rows="3"
+                        type="textarea"
+                        style="width: 100%"
+                      ></el-input>
+                    </el-form-item>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="10">
+                  <span class="add">
+                    <i
+                      class="el-icon-circle-plus-outline"
+                      @click="handleAdd"
+                    ></i>
+                  </span>
+                </td>
+              </tr>
+            </table>
+          </div>
+
+          <!--      出库单    -->
+          <div v-if="type == 'delivery'" class="body">
+            <table cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <th width="5%">序号</th>
+                <th width="15%">货物名称</th>
+                <th width="15%">规格</th>
+                <!-- <th width="15%">备注</th> -->
+                <th width="10%">批号</th>
+                <th width="10%">重量</th>
+                <th width="5%">KG/T</th>
+                <th width="10%">数量</th>
+                <th width="10%">托/箱</th>
+              </tr>
+              <tr v-for="(item, index) in form.goodsList" :key="index">
+                <td>{{ index + 1 }}</td>
+                <td>
+                  {{ item.itemname }}
+                </td>
+                <td>
+                  {{ item.format }}
+                </td>
+                <!-- <td>
+                  <el-form-item label="" :prop="`goodsList.${index}.remark`">
+                    <el-input
+                      v-model="item.remark"
+                      rows="1"
+                      type="textarea"
+                      size="mini"
+                    ></el-input>
+                  </el-form-item>
+                </td> -->
+                <td>
+                  <el-form-item
+                    label=""
+                    :prop="`goodsList.${index}.batchnum`"
+                    :rules="[
+                      {
+                        required: true,
+                        message: '必填',
+                        trigger: 'blur',
+                      },
+                    ]"
+                  >
+                    <el-input v-model="item.batchnum" size="mini"></el-input>
+                  </el-form-item>
+                </td>
+
                 <td>
                   <el-form-item
                     label=""
@@ -374,8 +382,8 @@
                   >
                     <el-input-number
                       v-model.number="item.weight"
-                      :precision="1"
-                      :min="0.1"
+                      :precision="3"
+                      :min="0"
                       size="mini"
                     ></el-input-number>
                   </el-form-item>
@@ -407,7 +415,63 @@
                     </el-select>
                   </el-form-item>
                 </td>
+                <td>
+                  <el-form-item
+                    label=""
+                    :prop="`goodsList.${index}.nums`"
+                    :rules="[
+                      {
+                        required: true,
+                        message: '必填',
+                        trigger: 'blur',
+                      },
+                      {
+                        type: 'number',
+                        message: '数字',
+                        min: 1,
+                        trigger: 'blur',
+                      },
+                    ]"
+                  >
+                    <el-input-number
+                      v-model.number="item.nums"
+                      size="mini"
+                      :precision="0"
+                    ></el-input-number>
+                  </el-form-item>
+                </td>
+                <td>
+                  <el-form-item
+                    label=""
+                    :prop="`goodsList.${index}.boxes`"
+                    :rules="[
+                      {
+                        required: true,
+                        message: '必填',
+                        trigger: 'change',
+                      },
+                    ]"
+                  >
+                    <el-select
+                      v-model="item.boxes"
+                      placeholder="请选"
+                      style="width: 80px"
+                      size="mini"
+                    >
+                      <el-option
+                        v-for="val in [
+                          { label: '托', value: 0 },
+                          { label: '箱', value: 1 },
+                        ]"
+                        :key="val.value"
+                        :label="val.label"
+                        :value="val.value"
+                      ></el-option>
+                    </el-select>
+                  </el-form-item>
+                </td>
               </tr>
+
               <tr>
                 <td colspan="8">
                   <div class="remark">
@@ -435,10 +499,10 @@
                 <th width="15%">规格</th>
                 <!-- <th width="15%">备注</th> -->
                 <th width="10%">批号</th>
-                <th width="10%">数量</th>
-                <th width="10%">托/箱</th>
                 <th width="10%">重量</th>
                 <th width="5%">KG/T</th>
+                <th width="10%">数量</th>
+                <th width="10%">托/箱</th>
                 <th v-if="form.style == 2" width="10%">单价</th>
                 <th v-if="form.style == 2" width="10%">金额</th>
               </tr>
@@ -457,16 +521,16 @@
                   {{ item.batchnum }}
                 </td>
                 <td>
-                  {{ item.nums }}
-                </td>
-                <td>
-                  {{ item.boxes ? '箱' : '托' }}
-                </td>
-                <td>
                   {{ item.weight }}
                 </td>
                 <td>
                   {{ item.unit }}
+                </td>
+                <td>
+                  {{ item.nums }}
+                </td>
+                <td>
+                  {{ item.boxes ? '箱' : '托' }}
                 </td>
                 <td v-if="form.style == 2">
                   <el-form-item
@@ -483,7 +547,7 @@
                     <el-input-number
                       v-model.number="item.price"
                       :min="0"
-                      :precision="2"
+                      :precision="3"
                     ></el-input-number>
                   </el-form-item>
                 </td>
@@ -515,10 +579,10 @@
               <tr>
                 <th width="5%">序号</th>
                 <th width="15%">货物名称</th>
-                <th width="10%">数量</th>
-                <th width="10%">托/箱</th>
                 <th width="10%">重量</th>
                 <th width="10%">KG/T</th>
+                <th width="10%">数量</th>
+                <th width="10%">托/箱</th>
               </tr>
               <tr v-for="(item, index) in form.goodsList" :key="index">
                 <td>{{ index + 1 }}</td>
@@ -526,16 +590,16 @@
                   {{ item.itemname }}
                 </td>
                 <td>
-                  {{ item.nums }}
-                </td>
-                <td>
-                  {{ item.boxes ? '箱' : '托' }}
-                </td>
-                <td>
                   {{ item.weight }}
                 </td>
                 <td>
                   {{ item.unit }}
+                </td>
+                <td>
+                  {{ item.nums }}
+                </td>
+                <td>
+                  {{ item.boxes ? '箱' : '托' }}
                 </td>
               </tr>
               <tr>
@@ -761,8 +825,8 @@
                   >
                     <el-input-number
                       v-model.number="item.weight"
-                      :min="1"
-                      :precision="1"
+                      :min="0"
+                      :precision="3"
                     ></el-input-number>
                   </el-form-item>
                 </td>
@@ -871,7 +935,7 @@
 
 <script>
   // import { doEdit } from '@/api/menuManagement'
-  // import { applyEdit } from './api'
+  import { applyEdit, buscusIndex } from './api'
   // import { number } from 'echarts/lib/export'
   import dayjs from 'dayjs'
   export default {
@@ -955,6 +1019,31 @@
         this.form = this.$options.data().form
         this.dialogFormVisible = false
         this.loading = false
+      },
+      getCustomerList(queryString, cb) {
+        buscusIndex({
+          datatype: 1,
+          filter: JSON.stringify({
+            compy: queryString,
+            type: 1,
+          }),
+          op: JSON.stringify({
+            compy: 'LIKE',
+          }),
+        }).then((res) => {
+          const list = []
+          res.rows.forEach((item) => {
+            list.push({
+              value: item.compy,
+              ...item,
+            })
+          })
+          cb(list)
+        })
+      },
+      handleSelect(val) {
+        // console.log(val)
+        this.form.shipaddress = val.shipaddress
       },
       save(type) {
         this.$refs[type].validate(async (valid) => {

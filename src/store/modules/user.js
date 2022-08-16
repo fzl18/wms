@@ -203,21 +203,23 @@ const actions = {
    * @description 拿菜单
    * @param {*} { dispatch }
    */
-  async getUserMenu({ commit }) {
-    let menu = await getMenu()
-    const roles = []
-    if (menu && menu.length) {
-      menu.map((item) => {
-        if (item.name == 'bus') {
-          item.childlist.map((val) => {
-            if (val.ismenu) {
-              roles.push(val.remark)
-            }
-          })
-        }
-      })
+  async getUserMenu({ commit, state }) {
+    if (!state.userGroup) {
+      let menu = await getMenu()
+      commit('setUserGroup', menu.group_id)
+      const roles = []
+      if (menu && menu[3] && menu[3].name == 'bus') {
+        menu[3].childlist.map((item) => {
+          if (item.ismenu) {
+            roles.push(item.remark)
+          }
+        })
+      }
+      commit('setRoles', roles)
+      let routeList = await store.dispatch('routes/setRoutes')
+      // console.log(routeList)
+      router.addRoutes(routeList)
     }
-    commit('setRoles', roles)
   },
   /**
    * @description 退出登录

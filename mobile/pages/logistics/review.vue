@@ -1,31 +1,28 @@
 <template>
 	<view class="container">
-		<u-navbar bgColor="#0051d4" titleStyle="color:#fff;fontSize:16px;fontWeight:bold" height="44" title="查询统计"
+		<!-- <u-navbar bgColor="#0051d4" titleStyle="color:#fff;fontSize:16px;fontWeight:bold" height="44" title="送货申请单"
 			fixed>
 			<view class="u-nav-slot" slot="left">
 				<u-icon name="arrow-left" size="26" color="#fff" @click="handleBack"></u-icon>
 			</view>
 			<view class="u-nav-slot" slot="right">
-				<!-- <u-icon name="plus" size="22" color="#fff" @click="handleCreate"></u-icon> -->
+				<u-icon name="plus" size="22" color="#fff" @click="handleCreate"></u-icon>
 			</view>
-		</u-navbar>
+		</u-navbar> -->
 		<view>
-			<u-sticky bgColor="#f1f1f1"  class="tab" customNavHeight="78">
-				<!-- <u-tabs :scrollable="false" lineWidth="50" :list="list" @change="sectionChange"></u-tabs> -->
-				<u-search @clickIcon="iconClick" :label="numberType" v-model="search.number" borderColor="rgb(0, 81, 212)" bgColor="#fff" @search="handleSearch" placeholder="输入要搜索的单号" actionText="选期" @custom="handleDate"  shape="round" margin="10upx 50upx"></u-search>
+			<u-sticky bgColor="#fff" class="tab" customNavHeight="78">
+				<u-tabs :scrollable="false" lineWidth="50" :list="list" @change="sectionChange"></u-tabs>
 			</u-sticky>
-			<u-empty mode="list" v-if="!indexList.length" text="暂无数据" marginTop="20">
+			<u-empty mode="list" v-if="!indexList.length" text="暂无数据" marginTop="100">
 			</u-empty>
-			<!-- <u-picker :show="typeShow" :columns="numberTypeList"></u-picker> -->
-			<u-action-sheet @select="handleSelect" @close="typeShow = false" :actions="numberTypeList" cancelText='取消' round="10" title="选择单号类型" :show="typeShow"></u-action-sheet>
-			<u-calendar monthNum="6" showLunar :minDate="minDate" :maxDate="maxDate" :show="calendarShow" mode="range" @confirm="calendarConfirm" @close="calendarShow =false"></u-calendar>
 			<view class="list" v-if="indexList.length">
 				<u-list @scrolltolower="scrolltolower" lowerThreshold="10" :pagingEnabled="true" :scrollTop='top'>
 					<u-list-item class="item" v-for="(item, index) in indexList" :key="index">
 						<u-cell icon="scan">
-							<text slot="title" v-if="">单号: <text class="title-text"> {{item[`${search.type}number`]}}</text></text>
-							<!-- <u-icon v-if="!cur" size="26" slot="right-icon" name="order" @click="handleOption(item)">
-							</u-icon> -->
+							<text slot="title">单号: <text class="title-text"> {{item.number}}</text></text>
+							<u-icon v-if="!cur" size="20" slot="right-icon" name="more-dot-fill"
+								@click="handleOption(item)">
+							</u-icon>
 							<!-- <u-switch slot="right-icon" v-model="checked"></u-switch> -->
 						</u-cell>
 						<u-cell :border="false" @click="linkto(item)">
@@ -57,42 +54,18 @@
 
 <script>
 	var api = require('@/common/api.js')
-	let start = new Date() - 60*60*24*31*2 *1000	
-	const minDate = uni.$u.timeFormat(start , 'yyyy-mm-dd')
-	const d = new Date()
-	const year = d.getFullYear()
-	let month = d.getMonth() + 1
-	month = month < 10 ? `0${month}` : month
-	const date = d.getDate()
-	console.log(minDate)
 	export default {
+
 		data() {
 			return {
 				top: 0,
 				isfinish: false,
 				loading: false,
-				calendarShow:false,
-				typeShow:false,
-				numberTypeList:[
-					{name:'送货申请单', value:''},
-					{name:'出库单', value:'out_'},
-					{name:'送货单', value:'deliv_'},
-					{name:'出门证', value:'pp_'},
-					{name:'退货单', value:'rtn_'},
-				],
-				minDate:minDate,
-				maxDate:`${year}-${month}-${date + 1}`,
-				numberType:'送货申请单',
 				list: [{
-					name: '完成送货单'
+					name: '未审核'
 				}, {
-					name: '已开退货单'
+					name: '已审核'
 				}],
-				search:{
-					number:'',
-					type:'',
-					date:[],
-				},
 				cur: 0,
 				curItem: {},
 				indexList: [],
@@ -126,7 +99,7 @@
 		},
 		onLoad(e) {
 			// var user = uni.getStorageSync('user');
-			// this.loadListData()
+			this.loadListData()
 			uni.$on('refresh', () => {
 				this.loadListData(true)
 			})
@@ -135,29 +108,13 @@
 			// this.loadListData()
 		},
 		methods: {
-			handleDate(){				
-				this.calendarShow = true
-				this.search.date = []
-			},
-			handleSearch(val){
-				this.search.number = val
-				this.loadListData(true)
-			},
-			iconClick(){
-				// this.loadListData()
-				this.search.date = []
-				this.typeShow = true
-			},
-			
 			sectionChange(index) {
 				// this.loading = true
 				this.top = 0
 				this.indexList = []
 				this.queryForm.pageNo = 1
 				this.cur = index.index;
-				if(index.index){					
-					this.loadListData()
-				}
+				this.loadListData()
 			},
 			scrolltolower() {
 				this.loadmore()
@@ -185,20 +142,18 @@
 				const data = {
 					company: '',
 					goodsList: [],
-					itemname: ''
+					itemname: '',
+					parmasType: 'add'
+
 				}
 				this.$store.state.home.itemList = data
 				uni.$u.route('/pages/list/detail');
 			},
 			handleOption(data) {
-				data.parmasType = 'return'
-				this.$store.state.home.itemList = data
-				uni.$u.route('/pages/list/detail');
-				// this.curItem = data
-				// this.show = true
+				this.curItem = data
+				this.show = true
 			},
 			selectClick(index) {
-				console.log(index.index)
 				this.show = false
 				if (index.index == 1) {
 					console.log(this.curItem)
@@ -242,7 +197,6 @@
 			linkto(data) {
 				data.pageTitle = '申请单'
 				data.parmasType = 'view'
-				data.viewType = 'return'
 				this.$store.state.home.itemList = data
 				uni.$u.route('/pages/list/detail');
 			},
@@ -263,99 +217,53 @@
 			// 	})
 
 			// },
-			handleSelect(data){
-				console.log(data)
-				this.typeShow = false
-				this.numberType = data.name
-				this.search.type = data.value
-				this.loadListData(true)
-			},
-			calendarConfirm(date){
-				let day2 = Date.parse(date.pop()) / 1000 + 60*60*24
-				let day1 = Date.parse(date[0]) / 1000
-				console.log( day1, day2)
-				this.calendarShow = false
-				this.search.date = [day1,day2]
-				this.loadListData(true)
-			},
 			loadListData(reload) {
 				// this.loading = true
 				if(reload){
 					this.queryForm.pageNo = 1
 					this.top = 0
 				}
-				let key = ''
-				switch (this.search.type){
-					// case '':
-					// key= 'SQ'
-					// 	break;
-					case 'out_':
-					key= 'CK'
-						break;
-					case 'deliv_':
-					key= 'HDCF'
-						break;
-					case 'pp_':
-					key= 'CM'
-						break;
-					case 'rtn_':
-					key= 'TH'
-						break;
-					default:
-					key = 'SQ'
-						break;
-				}
-				
-					api.post({
-						url: 'busrwaybill/all',
-						data: {
-							filter: JSON.stringify({
-								[`${this.search.type}number`]:key + this.search.number,
-								[`${this.search.type || 'create_'}time`]:this.search.date.join(','),
-							}),
-							op: JSON.stringify({
-									[`${this.search.type}number`]:'LIKE',
-									[`${this.search.type || 'create_'}time`]:'BETWEEN',
-									company: 'LIKE',
-								}),
-							offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
-							limit: this.queryForm.pageSize,
-						},
-						success: (data) => {
-							// console.log(data)
-							if (data.code == 1) {
-								this.loading = false
-								// this.search.date = []
-								if (reload) {
-									this.indexList = data.data.rows
-								} else {
-									data.data.rows.map(item => {
-										this.indexList.push(item)
-									})
-								}
-					
-								this.total = data.data.total
-								if (this.total <= (this.queryForm.pageNo - 1) * this.queryForm.pageSize) {
+				api.post({
+					url: 'busrwaybill/all',
+					data: {
+						filter: JSON.stringify({
+							status: this.cur
+						}),
+						offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
+						limit: this.queryForm.pageSize,
+					},
+					success: (data) => {
+						// console.log(data)
+						if (data.code == 1) {
+							this.loading = false
+							if (reload) {
+								this.indexList = data.data.rows
+							} else {
+								data.data.rows.map(item => {
+									this.indexList.push(item)
+								})
+							}
+
+							this.total = data.data.total
+							if (this.total <= (this.queryForm.pageNo - 1) * this.queryForm.pageSize) {
+								this.isfinish = true
+							} else {
+								if (this.total <= this.queryForm.pageSize) {
 									this.isfinish = true
 								} else {
-									if (this.total <= this.queryForm.pageSize) {
-										this.isfinish = true
-									} else {
-										this.isfinish = false
-									}
+									this.isfinish = false
 								}
 							}
-							if (data.code == 0) {
-								uni.showToast({
-									title: data.msg,
-									icon: "none",
-									duration: 1000
-								})
-							}							
 						}
-					})
-								
-				
+						if (data.code == 0) {
+							uni.showToast({
+								title: data.msg,
+								icon: "none",
+								duration: 1000
+							})
+						}
+					}
+				})
 			}
 		}
 	}
@@ -373,8 +281,7 @@
 
 		.tab {
 			// border-radius: 20upx;
-			// box-shadow: 5upx 5upx 10upx rgba(0, 0, 0, .1);
-			padding-top: 26upx;
+			box-shadow: 5upx 5upx 10upx rgba(0, 0, 0, .1);
 		}
 
 		.list {
@@ -394,6 +301,7 @@
 				/** 设置或检索伸缩盒对象的子元素的排列方式 **/
 				-webkit-line-clamp: 1;
 				/** 显示的行数 **/
+
 			}
 
 			.title-text {
@@ -401,7 +309,6 @@
 				font-size: 16px;
 				margin-left: 10upx;
 				color: #2d2d2d;
-
 			}
 
 			.item {

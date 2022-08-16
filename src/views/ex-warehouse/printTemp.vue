@@ -18,7 +18,7 @@
           <div class="custom">
             <div class="">收货单位（客户）：{{ info.company }}</div>
             <div class="date">
-              日期：{{ dayjs(info.pp_time * 1000).format('YYYY年 MM月 DD日') }}
+              日期：{{ dayjs(info.pp_time).format('YYYY年MM月DD日') }}
             </div>
           </div>
           <div class="body">
@@ -58,7 +58,7 @@
               </tr>
             </table>
           </div>
-          <div class="foot">操作员：{{ username }}</div>
+          <div style="text-align: right">操作员：{{ username }}</div>
         </div>
       </div>
       <!-- 出库单 -->
@@ -74,7 +74,7 @@
           <div class="custom">
             <div class="">收货单位（客户）：{{ info.company }}</div>
             <div class="date">
-              日期：{{ dayjs(info.out_time * 1000).format('YYYY年 MM月 DD日') }}
+              日期：{{ dayjs(info.out_time).format('YYYY年MM月DD日') }}
             </div>
           </div>
           <div class="body">
@@ -129,6 +129,12 @@
       <!-- 送货单 -->
       <div v-if="type == 'shipping'" id="shipping">
         <div class="company"><span>江苏海栋化纤有限公司</span></div>
+        <div class="side">
+          <span>存根(白)</span>
+          <span>客户(红)</span>
+          <span>物流(蓝)</span>
+          <span>记账(黄)</span>
+        </div>
         <div class="box">
           <div class="head">
             <div class="title">
@@ -139,9 +145,7 @@
           <div class="custom">
             <div class="">收货单位（客户）：{{ info.company }}</div>
             <div class="date">
-              日期：{{
-                dayjs(info.deliv_time * 1000).format('YYYY年 MM月 DD日')
-              }}
+              日期：{{ dayjs(info.deliv_time).format('YYYY年MM月DD日') }}
             </div>
           </div>
           <div class="body">
@@ -153,11 +157,11 @@
                 <!-- <th>备注</th> -->
                 <th>批号</th>
                 <th>重量</th>
-                <th width="60">单位</th>
+                <th width="5%">单位</th>
                 <th width="60">数量</th>
-                <th width="60">托/箱</th>
-                <th v-if="info.style == 2">单价</th>
-                <th v-if="info.style == 2">金额</th>
+                <th width="50">托/箱</th>
+                <th v-if="info.style == 2" width="5%">单价</th>
+                <th v-if="info.style == 2" width="10%">金额</th>
               </tr>
               <tr v-for="(item, index) in info.goodsList" :key="index">
                 <td>{{ index + 1 }}</td>
@@ -198,6 +202,7 @@
               </tr>
             </table>
           </div>
+          <div style="text-align: right">操作员：{{ username }}</div>
           <div class="foot">
             <div class="fir">
               <div>
@@ -233,7 +238,7 @@
           <div class="custom">
             <div class="">收货单位（客户）：{{ info.company }}</div>
             <div class="date">
-              日期：{{ dayjs(info.rtn_time * 1000).format('YYYY年 MM月 DD日') }}
+              日期：{{ dayjs(info.rtn_time).format('YYYY年MM月DD日') }}
             </div>
           </div>
           <div class="body">
@@ -390,7 +395,7 @@
           <div class="custom">
             <div class="">收货单位（客户）：{{ info.company }}</div>
             <div class="date">
-              日期：{{ dayjs(info.create_time).format('YYYY年 MM月 DD日') }}
+              日期：{{ dayjs(info.create_time).format('YYYY年MM月DD日') }}
             </div>
           </div>
           <div class="body">
@@ -446,7 +451,9 @@
                 </td>
               </tr>
             </table>
+            <div v-if="info.status == 1" class="review">已审核</div>
           </div>
+          <div style="text-align: right">操作员：{{ username }}</div>
         </div>
       </div>
     </div>
@@ -529,7 +536,7 @@
             break
           case 'view':
             this.userList.map((item) => {
-              if (item.user_id == this.info.pp_uid) {
+              if (item.user_id == this.info.uid) {
                 name = item.nickname
               }
             })
@@ -567,11 +574,32 @@
 </script>
 
 <style lang="scss" scoped>
+  #printMe {
+    font-family: '华文中宋', '黑体', 'Times New Roman', Times, serif;
+  }
+  #shipping {
+    position: relative;
+    padding-right: 20px;
+    // font-family: '黑体', '微软雅黑', 'Times New Roman', Times, serif;
+    .side {
+      position: absolute;
+      right: 0px;
+      top: 80px;
+      writing-mode: vertical-lr;
+      font-size: 13px;
+      font-family: '黑体', '微软雅黑', 'Times New Roman', Times, serif;
+      span {
+        padding: 5px 0;
+      }
+    }
+  }
+
   .company {
-    font-size: 26px;
+    font-size: 22px;
     font-weight: bold;
     text-align: center;
     margin-bottom: 15px;
+    font-family: '微软雅黑', '黑体', 'Times New Roman', Times, serif;
     span {
       padding: 5px 0px;
       border-bottom: 3px solid #666;
@@ -591,7 +619,7 @@
         color: red;
       }
       .title {
-        font-size: 22px;
+        font-size: 18px;
         text-align: center;
         display: flex;
         flex-direction: column;
@@ -625,6 +653,17 @@
             border-right: none;
           }
         }
+      }
+      .review {
+        position: absolute;
+        right: 10%;
+        bottom: 27%;
+        display: inline-block;
+        color: red;
+        border: 3px solid red;
+        padding: 5px;
+        font-size: 22px;
+        transform: rotate(-20deg);
       }
     }
     .foot {

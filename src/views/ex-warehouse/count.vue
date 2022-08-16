@@ -35,6 +35,21 @@
               placeholder="（客户）"
             ></el-input>
           </el-form-item>
+          <el-form-item label="日期" prop="date">
+            <el-date-picker
+              v-model="queryForm.date"
+              type="daterange"
+              align="right"
+              unlink-panels
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              :picker-options="pickerOptions"
+              format="yyyy 年 MM 月 dd 日"
+              value-format="timestamp"
+              :default-time="['00:00:00', '23:59:59']"
+            ></el-date-picker>
+          </el-form-item>
           <!-- <el-form-item label="货物名称" prop="itemname">
             <el-input
               v-model="queryForm.itemname"
@@ -335,7 +350,39 @@
           batchnum: '',
           itemname: '',
           company: '',
+          date: [],
           type: 'number',
+        },
+        pickerOptions: {
+          shortcuts: [
+            {
+              text: '最近一周',
+              onClick(picker) {
+                const end = new Date()
+                const start = new Date()
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 7)
+                picker.$emit('pick', [start, end])
+              },
+            },
+            {
+              text: '最近一个月',
+              onClick(picker) {
+                const end = new Date()
+                const start = new Date()
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 30)
+                picker.$emit('pick', [start, end])
+              },
+            },
+            {
+              text: '最近三个月',
+              onClick(picker) {
+                const end = new Date()
+                const start = new Date()
+                start.setTime(start.getTime() - 3600 * 1000 * 24 * 90)
+                picker.$emit('pick', [start, end])
+              },
+            },
+          ],
         },
         typeOption: [
           { label: '送货申请单', value: 'number' },
@@ -358,22 +405,28 @@
         this.listLoading = true
         // console.log(this.queryForm.type)
         let val = ''
+        let time = ''
         if (!this.queryForm.number) {
           switch (this.queryForm.type) {
             case 'number':
               val = 'SQ'
+              time = 'create_time'
               break
             case 'out_number':
               val = 'CK'
+              time = 'out_time'
               break
             case 'deliv_number':
               val = 'HDCF'
+              time = 'deliv_time'
               break
             case 'pp_number':
               val = 'CM'
+              time = 'pp_time'
               break
             case 'rtn_number':
               val = 'TH'
+              time = 'rtn_time'
               break
             default:
               break
@@ -387,10 +440,16 @@
             // number: this.queryForm.batchnum,
             // deliv_number: this.queryForm.itemname,
             // pp_number: this.queryForm.amount,
+            [time]: this.queryForm.date.length
+              ? `${Math.floor(this.queryForm.date[0] / 1000)},${Math.floor(
+                  this.queryForm.date[1] / 1000
+                )}`
+              : '',
           }),
           op: JSON.stringify({
             company: 'LIKE',
             [this.queryForm.type]: 'LIKE',
+            [time]: 'BETWEEN',
             // amount: 'LIKE',
           }),
           offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,

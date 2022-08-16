@@ -1,8 +1,8 @@
 <template>
   <div class="custom-table-container">
     <div class="tabs">
-      <div :class="!active ? 'cur' : ''" @click="handleTabs(0)">待开出库单</div>
-      <div :class="active ? 'cur' : ''" @click="handleTabs(1)">已开出库单</div>
+      <div :class="!active ? 'cur' : ''" @click="handleTabs(0)">待填物流单</div>
+      <div :class="active ? 'cur' : ''" @click="handleTabs(1)">已填物流单</div>
     </div>
     <el-table
       ref="tableSort"
@@ -86,8 +86,13 @@
           <span v-if="item.label === '序号'">
             {{ (queryForm.pageNo - 1) * queryForm.pageSize + $index + 1 }}
           </span>
-          <span v-if="item.label === '时间'">
-            {{ dayjs(row[item.prop]).format('YYYY-MM-DD') }}
+          <!-- <span v-if="item.label === '时间'">
+            <span>{{ dayjs(row[item.prop]).format('YYYY-MM-DD') }}</span>
+          </span> -->
+          <span v-if="item.label === '是否审核'">
+            <el-tag class="ml-2" :type="row[item.prop] ? 'success' : 'warning'">
+              {{ row[item.prop] ? '已审核' : '未审核' }}
+            </el-tag>
           </span>
           <span v-else>{{ row[item.prop] }}</span>
         </template>
@@ -97,10 +102,10 @@
         align="center"
         label="操作"
         show-overflow-tooltip
-        :min-width="130"
+        :min-width="80"
       >
         <template #default="{ row }">
-          <el-tooltip v-if="!active" content="开具出库单" placement="top">
+          <el-tooltip v-if="!active" content="填写物流信息" placement="top">
             <el-button type="text" @click="handleEdit(row)">
               <remix-icon
                 icon-class="pages-line"
@@ -108,7 +113,19 @@
               ></remix-icon>
             </el-button>
           </el-tooltip>
-          <el-tooltip v-if="active" content="删除" placement="top">
+          <el-tooltip
+            v-if="active && !row.log_status"
+            content="编辑"
+            placement="top"
+          >
+            <el-button type="text" @click="handleEdit(row)">
+              <remix-icon
+                icon-class="edit-line"
+                :style="{ fontSize: '18px' }"
+              ></remix-icon>
+            </el-button>
+          </el-tooltip>
+          <!-- <el-tooltip v-if="!active" content="删除" placement="top">
             <el-button
               type="text"
               :disabled="!!row.deliv_status"
@@ -122,12 +139,16 @@
                 }"
               ></remix-icon>
             </el-button>
-          </el-tooltip>
-          <el-tooltip v-if="active" content="打印" placement="top">
-            <el-button type="text" @click="handlePrint(row)">
+          </el-tooltip> -->
+          <el-tooltip
+            v-if="active && row.log_status"
+            content="查看"
+            placement="top"
+          >
+            <el-button type="text" @click="handleEdit(row, 'view')">
               <remix-icon
-                icon-class="printer-line"
-                :style="{ fontSize: '18px', color: '#333' }"
+                icon-class="eye-fill"
+                :style="{ fontSize: '18px', color: '#aaa' }"
               ></remix-icon>
             </el-button>
           </el-tooltip>
@@ -145,30 +166,28 @@
     ></el-pagination>
     <table-edit
       ref="edit"
-      :tit="'出库单'"
-      type="delivery"
+      :tit="'物流信息'"
+      :type="log_type"
       @confirm="confirm"
     ></table-edit>
-    <print-temp ref="print" type="delivery"></print-temp>
   </div>
 </template>
 
 <script>
   import _ from 'lodash'
   import TableEdit from './edit.vue'
-  import PrintTemp from './printTemp.vue'
-  import { busoutboundEdit, applyAll } from './api'
+  import { applyAll, buslogisticsEdit } from './api'
   import dayjs from 'dayjs'
 
   export default {
     name: 'CustomTable',
     components: {
       TableEdit,
-      PrintTemp,
     },
     data() {
       return {
         active: 0,
+        log_type: '',
         columns: [
           {
             label: '序号',
@@ -195,16 +214,16 @@
           //   width: 'auto',
           //   prop: 'specifications',
           // },
-          // {
-          //   label: '重量',
-          //   width: 'auto',
-          //   prop: 'weight',
-          // },
-          // {
-          //   label: '单位',
-          //   width: '80',
-          //   prop: 'unit',
-          // },
+          {
+            label: '重量',
+            width: 'auto',
+            prop: 'weight',
+          },
+          {
+            label: '单位',
+            width: '80',
+            prop: 'unit',
+          },
           // // {
           //   label: '单价',
           //   width: 'auto',
@@ -215,11 +234,11 @@
           //   width: 'auto',
           //   prop: 'nums',
           // },
-          {
-            label: '时间',
-            width: 'auto',
-            prop: 'update_time',
-          },
+          // {
+          //   label: '时间',
+          //   width: 'auto',
+          //   prop: 'update_time',
+          // },
         ],
         list: [],
         listLoading: false,
@@ -242,57 +261,51 @@
       dayjs,
       getList() {
         this.listLoading = true
-        if (this.active) {
-          applyAll({
-            datatype: 1,
-            filter: JSON.stringify({ status: 1, out_status: 1 }),
-            offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
-            limit: this.queryForm.pageSize,
-          }).then((res) => {
-            res.rows.map(
-              (item) => (item.out_time = dayjs(item.out_time * 1000).format())
-            )
-            this.list = res.rows
-            this.total = res.total
-            this.listLoading = false
+        applyAll({
+          datatype: 1,
+          filter: JSON.stringify({
+            status: 1,
+            log_number: 'WL',
+          }),
+          op: JSON.stringify({
+            log_number: this.active ? 'LIKE' : 'NOT LIKE',
+          }),
+          offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
+          limit: this.queryForm.pageSize,
+        }).then((res) => {
+          res.rows.map((item) => {
+            item.update_time = dayjs(item.update_time).format('YYYY-MM-DD')
           })
-        } else {
-          applyAll({
-            datatype: 1,
-            filter: JSON.stringify({ status: 1, out_status: 0 }),
-            offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
-            limit: this.queryForm.pageSize,
-          }).then((res) => {
-            res.rows.map(
-              (item) => (item.out_time = dayjs(item.out_time * 1000).format())
-            )
-            this.list = res.rows
-            this.total = res.total
-            this.listLoading = false
-          })
-        }
+          this.list = res.rows
+          this.total = res.total
+          this.listLoading = false
+        })
       },
       handleAdd() {
-        this.$refs['edit'].showEdit()
+        this.$refs['edit'].show()
       },
-      handleEdit(row) {
-        this.$refs['edit'].showEdit(row)
+      handleEdit(row, type) {
+        if (type == 'view') {
+          row.actionType = type
+          this.log_type = type
+        }
+        this.$refs['edit'].show(row)
       },
       confirm(data) {
         if (data.id) {
-          busoutboundEdit({ ...data, out_status: 1 }).then((res) => {
+          buslogisticsEdit({ ...data }).then((res) => {
             if (res) {
-              this.$baseMessage('开具成功！', 'success')
+              this.$baseMessage('编辑成功！', 'success')
+              this.getList()
               this.$refs.edit.close()
             }
           })
         }
-        this.getList()
       },
       handleDelete(row) {
         if (row.id) {
           this.$baseConfirm('你确定要删除当前项吗', null, async () => {
-            await busoutboundEdit({ ...row, out_status: 0 })
+            await buslogisticsDel({ id: row.id })
             this.$baseMessage('删除成功！', 'success')
             await this.getList()
           })
@@ -322,8 +335,8 @@
               prop: '',
             },
             {
-              label: '出库单号',
-              prop: 'out_number',
+              label: '单号',
+              prop: 'number',
             },
             {
               label: '收货单位（客户）',
@@ -356,15 +369,20 @@
             //   width: 'auto',
             //   prop: 'price',
             // },
+            // {
+            //   label: '数量',
+            //   width: 'auto',
+            //   prop: 'nums',
+            // },
+            // {
+            //   label: '时间',
+            //   width: 'auto',
+            //   prop: 'update_time',
+            // },
             {
-              label: '数量',
+              label: '是否审核',
               width: 'auto',
-              prop: 'nums',
-            },
-            {
-              label: '时间',
-              width: 'auto',
-              prop: 'out_time',
+              prop: 'log_status',
             },
           ]
         } else {
@@ -394,31 +412,31 @@
             //   width: 'auto',
             //   prop: 'specifications',
             // },
-            // {
-            //   label: '重量',
-            //   width: 'auto',
-            //   prop: 'weight',
-            // },
-            // {
-            //   label: '单位',
-            //   width: '80',
-            //   prop: 'unit',
-            // },
+            {
+              label: '重量',
+              width: 'auto',
+              prop: 'weight',
+            },
+            {
+              label: '单位',
+              width: '80',
+              prop: 'unit',
+            },
             // // {
             //   label: '单价',
             //   width: 'auto',
             //   prop: 'price',
             // },
-            {
-              label: '数量',
-              width: 'auto',
-              prop: 'nums',
-            },
-            {
-              label: '时间',
-              width: 'auto',
-              prop: 'update_time',
-            },
+            // {
+            //   label: '数量',
+            //   width: 'auto',
+            //   prop: 'nums',
+            // },
+            // {
+            //   label: '时间',
+            //   width: 'auto',
+            //   prop: 'update_time',
+            // },
           ]
         }
       },

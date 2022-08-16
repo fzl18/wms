@@ -1,83 +1,66 @@
 <template>
   <div class="custom-table-container">
     <el-row :gutter="20" class="grid">
-      <el-col :span="6">
-        <section v-if="roles.includes('rway')" @click="linkto('applylist')">
+      <el-col v-if="roles.includes('rway')" :span="6">
+        <section @click="linkto('customer')">
           <div class="img">
             <remix-icon
-              icon-class="file-text-line"
+              icon-class="user-star-line"
               style="font-size: 40px"
             ></remix-icon>
           </div>
-          <span>添加送货申请单</span>
+          <span>客户信息</span>
         </section>
       </el-col>
-      <el-col :span="6">
-        <section v-if="roles.includes('cway')" @click="linkto('review')">
-          <div class="img">
-            <remix-icon
-              icon-class="auction-line"
-              style="font-size: 40px"
-            ></remix-icon>
-          </div>
-          <span>申请单审核</span>
-        </section>
-      </el-col>
-      <el-col :span="6">
-        <section v-if="roles.includes('out')" @click="linkto('delivery')">
-          <div class="img">
-            <remix-icon
-              icon-class="pages-line"
-              style="font-size: 40px"
-            ></remix-icon>
-          </div>
-          <span>开具出库单</span>
-        </section>
-      </el-col>
-      <el-col :span="6">
-        <section v-if="roles.includes('go')" @click="linkto('permit')">
-          <div class="img">
-            <remix-icon
-              icon-class="book-read-fill"
-              style="font-size: 40px"
-            ></remix-icon>
-          </div>
-          <span>开具出门证</span>
-        </section>
-      </el-col>
-      <el-col :span="6">
-        <section v-if="roles.includes('del')" @click="linkto('shipping')">
+      <el-col v-if="roles.includes('out')" :span="6">
+        <section @click="linkto('transit')">
           <div class="img">
             <remix-icon
               icon-class="truck-line"
               style="font-size: 40px"
             ></remix-icon>
           </div>
-          <span>开具送货单</span>
+          <span>运输公司</span>
         </section>
       </el-col>
       <el-col :span="6">
-        <section v-if="roles.includes('rtn')" @click="linkto('returnOrder')">
+        <section
+          v-if="
+            $store.state.user.userGroup == 8 || $store.state.user.userGroup == 4
+          "
+          @click="linkto('user')"
+        >
           <div class="img">
             <remix-icon
-              icon-class="share-forward-box-line"
+              icon-class="user-line"
               style="font-size: 40px"
             ></remix-icon>
           </div>
-          <span>退货申请单</span>
+          <span>用户管理</span>
+        </section>
+      </el-col>
+      <!-- <el-col :span="6">
+        <section v-if="roles.includes('cway')" @click="linkto('transit')">
+          <div class="img">
+            <remix-icon
+              icon-class="group-line"
+              style="font-size: 40px"
+            ></remix-icon>
+          </div>
+          <span>供应商（暂无）</span>
         </section>
       </el-col>
       <el-col :span="6">
-        <section v-if="roles.includes('stats')" @click="linkto('count')">
+        <section v-if="roles.includes('cway')" @click="linkto('transit')">
           <div class="img">
             <remix-icon
-              icon-class="table-2"
+              icon-class="suitcase-line"
               style="font-size: 40px"
             ></remix-icon>
           </div>
-          <span>统计查询</span>
+          <span>物品（暂无）</span>
         </section>
-      </el-col>
+      </el-col> -->
     </el-row>
   </div>
 </template>
@@ -89,6 +72,7 @@
     data() {
       return {
         roles: this.$store.state.user.roles,
+        userGroup: this.$store.state.user.userGroup,
       }
     },
     created() {
@@ -100,7 +84,11 @@
     methods: {
       init() {},
       linkto(type) {
-        this.$router.push(`/exwarehouse/${type}`)
+        if (type == 'user') {
+          this.$router.push(`/exwarehouse/${type}`)
+        } else {
+          this.$router.push(`/info/${type}`)
+        }
       },
     },
   }

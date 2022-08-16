@@ -218,21 +218,10 @@
           {
             label: '时间',
             width: 'auto',
-            prop: 'update_time',
+            prop: 'deliv_time',
           },
         ],
-        list: [
-          {
-            lotNumber: '批号de-32343',
-            customName: '牛XX的客户',
-            unit: '元',
-            weight: '42KG',
-            goodsName: '货物名称',
-            specifications: '323 x 843',
-            total: 1221,
-            price: 5895,
-          },
-        ],
+        list: [],
         listLoading: false,
         layout: 'total, sizes, prev, pager, next, jumper',
         total: 0,
@@ -264,6 +253,10 @@
             offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
             limit: this.queryForm.pageSize,
           }).then((res) => {
+            res.rows.map(
+              (item) =>
+                (item.deliv_time = dayjs(item.deliv_time * 1000).format())
+            )
             this.list = res.rows
             this.total = res.total
             this.listLoading = false
@@ -279,6 +272,10 @@
             offset: (this.queryForm.pageNo - 1) * this.queryForm.pageSize,
             limit: this.queryForm.pageSize,
           }).then((res) => {
+            res.rows.map(
+              (item) =>
+                (item.deliv_time = dayjs(item.deliv_time * 1000).format())
+            )
             this.list = res.rows
             this.total = res.total
             this.listLoading = false
@@ -377,7 +374,7 @@
             {
               label: '时间',
               width: 'auto',
-              prop: 'update_time',
+              prop: 'deliv_time',
             },
           ]
         } else {

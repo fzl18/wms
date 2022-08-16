@@ -41,6 +41,7 @@ const actions = {
     //   routes = convertRouter(data)
     // }
     const roles = store.getters['user/roles']
+    const userGroup = store.getters['user/userGroup']
 
     //     "rway": 送货申请单 对应  applylist
     //     "cway": 审核  对应   review
@@ -50,39 +51,66 @@ const actions = {
     //     "rtn":  退货申请单 对应 returnOrder
     //     "stats":  统计查询 对应 count
     routes.map((item) => {
+      // console.log(item)
+      if (item.name == 'logistics') {
+        item.children.map((val) => {
+          // console.log(val, userGroup)
+          if ((userGroup == 12 || userGroup == 4) && val.name == 'Info') {
+            val.hidden = false
+            // return
+          }
+          if (userGroup == 4 && val.name == 'Review') {
+            val.hidden = false
+            // return
+          }
+        })
+      }
+      if (item.name == 'info') {
+        item.children.map((val) => {
+          if (roles.includes('rway') && val.name == 'Customer') {
+            val.hidden = false
+            // return
+          }
+          if (roles.includes('out') && val.name == 'Transit') {
+            val.hidden = false
+            // return
+          }
+        })
+      }
       if (item.name == 'exwarehouse') {
         item.children.map((val) => {
           if (val.name == 'applylist' && roles.includes('rway')) {
             val.hidden = false
-            return
+            // return
           }
           if (val.name == 'review' && roles.includes('cway')) {
             val.hidden = false
-            return
+            // return
           }
           if (val.name == 'delivery' && roles.includes('out')) {
             val.hidden = false
-            return
+            // return
           }
           if (val.name == 'shipping' && roles.includes('del')) {
             val.hidden = false
-            return
+            // return
           }
           if (val.name == 'permit' && roles.includes('go')) {
             val.hidden = false
-            return
+            // return
           }
           if (val.name == 'returnOrder' && roles.includes('rtn')) {
             val.hidden = false
-            return
+            // return
           }
           if (val.name == 'count' && roles.includes('stats')) {
             val.hidden = false
-            return
+            // return
           }
         })
       }
     })
+    // console.log(routes)
     const finallyRoutes = filterRoutes([...constantRoutes, ...routes])
     commit('setRoutes', finallyRoutes)
     commit('setGenerate', true)
